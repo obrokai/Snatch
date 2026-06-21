@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
-import { Reflector } from "three/addons/objects/Reflector.js";
 import Lenis from "lenis";
 import "./style.css";
 
@@ -77,6 +76,7 @@ keyLight.shadow.camera.right = 14;
 keyLight.shadow.camera.top = 14;
 keyLight.shadow.camera.bottom = -14;
 keyLight.shadow.bias = -0.0004;
+keyLight.shadow.normalBias = 0.025;
 scene.add(keyLight);
 
 // 門口的辨識光暈（冷白 + 微青）
@@ -181,12 +181,16 @@ backWall.position.set(0, 4.5, -15);
 backWall.receiveShadow = true;
 world.add(backWall);
 
-/* ---- 鏡牆（健身房招牌元素 · 真實平面反射） ---- */
-const mirror = new Reflector(new THREE.PlaneGeometry(7, 3.4), {
-  color: 0x6f6a63,
-  textureWidth: 1024,
-  textureHeight: 1024,
-});
+/* ---- 鏡牆（健身房招牌元素 · 以 HDRI 環境反射呈現，穩定不閃爍） ---- */
+const mirror = new THREE.Mesh(
+  new THREE.PlaneGeometry(7, 3.4),
+  new THREE.MeshStandardMaterial({
+    color: "#cfcabf",
+    roughness: 0.08,
+    metalness: 1,
+    envMapIntensity: 2.2,
+  })
+);
 mirror.rotation.y = -Math.PI / 2;
 mirror.position.set(6.42, 1.85, -8.5);
 world.add(mirror);
