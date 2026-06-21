@@ -12,7 +12,8 @@
   --accent-glow: rgba(255, 107, 26, 0.16);
   --line: rgba(255, 255, 255, 0.12);
   --serif: "Noto Sans TC", system-ui, sans-serif;
-  --mono: "Manrope", "Noto Sans TC", sans-serif;
+  --mono: "IBM Plex Mono", "Manrope", "Noto Sans TC", monospace;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 * {
@@ -94,51 +95,119 @@ body {
   align-items: center;
   text-align: center;
 }
+/* 章節標記：索引號 + 細線 + 標籤 */
 .ov__kicker {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
   font-family: var(--mono);
-  font-size: 0.78rem;
-  letter-spacing: 0.42em;
+  font-size: 0.72rem;
+  letter-spacing: 0.34em;
   text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 1.9rem;
+}
+.ov__kicker i {
+  font-style: normal;
   color: var(--accent);
-  margin-bottom: 1.6rem;
-  opacity: 0.9;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+}
+.ov__kicker i::after {
+  content: "";
+  display: inline-block;
+  width: 2.4rem;
+  height: 1px;
+  margin-left: 0.9rem;
+  vertical-align: middle;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+.ov__kicker--center {
+  justify-content: center;
 }
 .ov__title {
-  font-size: clamp(1.9rem, 4.6vw, 4rem);
-  font-weight: 300;
-  line-height: 1.32;
-  letter-spacing: 0.01em;
-  max-width: 18em;
+  font-size: clamp(1.95rem, 4.7vw, 4.05rem);
+  font-weight: 250;
+  line-height: 1.4;
+  letter-spacing: -0.005em;
+  max-width: 19em;
+  text-wrap: balance;
 }
 .ov__title--big {
-  font-size: clamp(2.1rem, 5.4vw, 4.8rem);
+  font-size: clamp(2.15rem, 5.4vw, 4.7rem);
   font-weight: 200;
+  line-height: 1.42;
 }
 .ov__sub {
-  margin-top: 1.8rem;
-  font-size: clamp(0.95rem, 1.4vw, 1.15rem);
+  margin-top: 1.9rem;
+  font-size: clamp(0.92rem, 1.35vw, 1.12rem);
   font-weight: 300;
-  line-height: 1.9;
+  line-height: 2;
   color: var(--ink-soft);
   max-width: 30em;
 }
 .ov__cta {
   pointer-events: auto;
-  margin-top: 2.8rem;
+  margin-top: 3rem;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  text-decoration: none;
+}
+.ov__cta span {
   display: inline-block;
-  padding: 1.1rem 2.4rem;
+  padding: 1.05rem 2.6rem;
   border: 1px solid var(--accent);
   border-radius: 999px;
   color: var(--accent);
-  text-decoration: none;
-  font-size: 1rem;
+  font-size: 1.02rem;
   letter-spacing: 0.04em;
-  transition: background 0.4s ease, color 0.4s ease, transform 0.4s ease;
+  transition: background 0.45s var(--ease), color 0.45s var(--ease),
+    transform 0.45s var(--ease), box-shadow 0.45s var(--ease);
 }
-.ov__cta:hover {
+.ov__cta:hover span {
   background: var(--accent);
   color: #0a0a0d;
   transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(255, 107, 26, 0.28);
+}
+.ov__cta em {
+  font-style: normal;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+}
+/* 收尾品牌簽名 */
+.ov__sign {
+  margin-top: clamp(2.5rem, 8vh, 5rem);
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.18em;
+  color: var(--ink-faint);
+}
+.ov__sign-mark {
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  color: var(--ink-soft);
+}
+.ov__sign-mark i {
+  font-style: normal;
+  color: var(--accent);
+}
+.ov__sign a {
+  color: var(--ink-faint);
+  text-decoration: none;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 2px;
+  transition: color 0.3s ease, border-color 0.3s ease;
+}
+.ov__sign a:hover {
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 /* ---------- 進站序幕（人臉掃描） ---------- */
@@ -555,15 +624,15 @@ body {
   color: var(--accent);
 }
 
-/* ---------- 進度刻度 ---------- */
+/* ---------- 章節索引（右側） ---------- */
 .progress {
   position: fixed;
-  right: 2rem;
+  right: 2.2rem;
   top: 50%;
   transform: translateY(-50%);
   z-index: 4;
   opacity: 0;
-  transition: opacity 0.6s ease;
+  transition: opacity 0.6s var(--ease);
 }
 .progress.is-visible {
   opacity: 1;
@@ -572,27 +641,146 @@ body {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 11px;
+  align-items: flex-end;
 }
 .progress li {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  border: 1px solid var(--ink-faint);
-  transition: background 0.4s ease, border-color 0.4s ease, transform 0.4s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-family: var(--mono);
+  cursor: pointer;
 }
-.progress li.is-active {
+.progress li b {
+  font-size: 0.62rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  color: var(--ink-faint);
+  opacity: 0.55;
+  transition: color 0.4s var(--ease), opacity 0.4s var(--ease);
+}
+.progress li span {
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 0;
+  transition: max-width 0.5s var(--ease), opacity 0.4s var(--ease);
+}
+.progress li::after {
+  content: "";
+  width: 18px;
+  height: 1px;
+  background: var(--ink-faint);
+  opacity: 0.4;
+  transition: width 0.4s var(--ease), background 0.4s var(--ease), opacity 0.4s var(--ease);
+}
+.progress li.is-active b {
+  color: var(--accent);
+  opacity: 1;
+}
+.progress li.is-active span {
+  max-width: 8rem;
+  opacity: 1;
+  color: var(--ink);
+}
+.progress li.is-active::after {
+  width: 30px;
   background: var(--accent);
+  opacity: 1;
+}
+.progress:hover li span {
+  max-width: 8rem;
+  opacity: 0.7;
+}
+
+/* ---------- 品牌列 ---------- */
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem clamp(1.5rem, 5vw, 3.2rem);
+  opacity: 0;
+  transform: translateY(-12px);
+  transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
+  pointer-events: none;
+}
+.topbar.is-visible {
+  opacity: 1;
+  transform: none;
+}
+.topbar__brand {
+  pointer-events: auto;
+  font-family: var(--mono);
+  font-size: 0.92rem;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  color: var(--ink);
+  text-decoration: none;
+}
+.topbar__brand span {
+  color: var(--accent);
+}
+.topbar__cta {
+  pointer-events: auto;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  color: var(--ink-soft);
+  text-decoration: none;
+  padding: 0.6rem 1.2rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  transition: color 0.35s var(--ease), border-color 0.35s var(--ease), background 0.35s var(--ease);
+}
+.topbar__cta:hover {
+  color: var(--accent);
   border-color: var(--accent);
-  transform: scale(1.35);
+  background: var(--accent-glow);
+}
+
+/* ---------- 電影感質地：細顆粒 + 暗角 ---------- */
+.grain {
+  position: fixed;
+  inset: -50%;
+  z-index: 5;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  mix-blend-mode: overlay;
+  animation: grain 0.6s steps(2) infinite;
+}
+@keyframes grain {
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(-1.5%, 1%); }
+  100% { transform: translate(1%, -1.5%); }
+}
+.vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: radial-gradient(120% 100% at 50% 45%, transparent 52%, rgba(0, 0, 0, 0.55) 100%);
 }
 
 @media (max-width: 640px) {
   .ov__title { letter-spacing: 0; }
   .progress { right: 1rem; }
+  .progress li span, .progress li::after { display: none; }
+  .topbar { padding: 1.1rem 1.4rem; }
+  .topbar__brand { font-size: 0.82rem; }
   /* 手機置中偏下、文案放上方，避免在窄螢幕互相遮擋 */
   .phone { left: 50%; top: 62%; transform: translate(-50%, -50%) translateY(30px) scale(0.62); }
   .ov--phone { justify-content: flex-start; padding-top: 5vh; align-items: center; text-align: center; padding-right: 0; padding-left: clamp(1.2rem, 6vw, 3rem); }
   .ov--phone .ov__title, .ov--phone .ov__sub { max-width: 100%; }
+  .ov__sign { flex-direction: column; gap: 0.7rem; }
   .scroll-hint span { display: none; }
 }

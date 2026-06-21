@@ -658,6 +658,16 @@ lenis.on("scroll", ({ scroll, limit }) => {
 });
 lenis.stop(); // 進站序幕完成前先鎖住
 
+// 章節索引／品牌列導覽
+dots.forEach((li) => {
+  const act = +li.dataset.act;
+  li.addEventListener("click", () => lenis.scrollTo(((act + 0.5) / ACTS) * lenis.limit));
+});
+document.querySelector(".topbar__brand").addEventListener("click", (e) => {
+  e.preventDefault();
+  lenis.scrollTo(0);
+});
+
 /* ---------------------------------------------------------------------- */
 /* 渲染迴圈                                                               */
 /* ---------------------------------------------------------------------- */
@@ -710,6 +720,7 @@ function runBoot() {
       bootStatus.classList.add("is-ok");
       setTimeout(() => {
         boot.classList.add("is-done");
+        document.getElementById("topbar").classList.add("is-visible");
         lenis.start();
       }, 650);
     }
