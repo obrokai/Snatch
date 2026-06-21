@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>SnatchOS — 該消失的，都消失了</title>
+    <meta name="description" content="無摩擦人臉入場、LINE 一站式、AI 對話式後台。讓場館活成連鎖品牌。" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@200;300;400;500;700&family=Manrope:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- 固定全螢幕 3D 舞台 -->
+    <canvas id="stage"></canvas>
+
+    <!-- 進站載入 / 人臉掃描序幕 -->
+    <div id="boot" class="boot">
+      <div class="boot__inner">
+        <div class="boot__brand">SNATCH<span>OS</span></div>
+        <div class="boot__scan">
+          <div class="boot__reticle">
+            <span></span><span></span><span></span><span></span>
+            <div class="boot__line"></div>
+          </div>
+        </div>
+        <div class="boot__status" id="boot-status">正在辨識…</div>
+        <div class="boot__bar"><i id="boot-bar"></i></div>
+      </div>
+    </div>
+
+    <!-- 捲動提示 -->
+    <div class="scroll-hint" id="scroll-hint">
+      <span>向下，走進來</span>
+      <div class="scroll-hint__mouse"><i></i></div>
+    </div>
+
+    <!-- 固定文案疊層（每一幕一塊，依捲動淡入淡出） -->
+    <div class="overlays" id="overlays">
+      <!-- 第一幕 -->
+      <section class="ov" data-act="0">
+        <p class="ov__kicker">無摩擦入場</p>
+        <h2 class="ov__title">會員不必停下。<br />門，自己認得他。</h2>
+      </section>
+
+      <!-- 第二幕 -->
+      <section class="ov ov--phone" data-act="1">
+        <p class="ov__kicker">LINE 一站式</p>
+        <h2 class="ov__title">他要的一切，<br />都在他早就打開的那個 App 裡。</h2>
+        <p class="ov__sub">沒有新 App、沒有新帳號。約課、買堂數、請假、查剩餘堂數 —— 全程都在 LINE。</p>
+      </section>
+
+      <!-- 第三幕 -->
+      <section class="ov" data-act="2">
+        <p class="ov__kicker">人力被解放</p>
+        <h2 class="ov__title">櫃檯，<br />不再需要有人被綁在這裡。</h2>
+        <p class="ov__sub">店員不必困在櫃檯收錢點名，走到場上，做更有價值的事。</p>
+      </section>
+
+      <!-- 第四幕 -->
+      <section class="ov ov--top" data-act="3">
+        <p class="ov__kicker">AI 對話式後台</p>
+        <h2 class="ov__title">你不用學系統。<br />系統聽你的話。</h2>
+      </section>
+
+      <!-- 第五幕 -->
+      <section class="ov ov--center" data-act="4">
+        <h2 class="ov__title ov__title--big">該消失的，都消失了。<br />剩下的，是一家終於像樣的店。</h2>
+      </section>
+
+      <!-- 第六幕 -->
+      <section class="ov" data-act="5">
+        <p class="ov__kicker">無痛遷移</p>
+        <h2 class="ov__title">不用關店，不用熬。<br />四週，你的店就換上新引擎。</h2>
+        <p class="ov__sub">舊會員、剩多少堂、誰在請假，我們都接過來，不用你重 key。</p>
+      </section>
+
+      <!-- 第七幕 -->
+      <section class="ov ov--center" data-act="6">
+        <h2 class="ov__title ov__title--big">來看看你的場館，<br />可以變成什麼樣子。</h2>
+        <a class="ov__cta" href="mailto:hello@snatch.tw?subject=預約一場 15 分鐘示範">
+          預約一場 15 分鐘示範 ／ 聊聊你的場館
+        </a>
+      </section>
+    </div>
+
+    <!-- LINE 手機 UI（第二幕 HTML 疊層，crisp） -->
+    <div class="phone" id="phone" aria-hidden="true">
+      <div class="phone__notch"></div>
+      <div class="phone__header">
+        <div class="phone__avatar"></div>
+        <div class="phone__name">你的健身房 官方帳號</div>
+      </div>
+      <div class="phone__chat">
+        <div class="phone__bubble">嗨，今天想做什麼？</div>
+      </div>
+      <div class="phone__menu" id="phone-menu">
+        <button data-key="book"><span>＋</span>約課</button>
+        <button data-key="buy"><span>◇</span>買堂數</button>
+        <button data-key="leave"><span>⊘</span>請假</button>
+        <button data-key="balance"><span>≡</span>查剩餘堂數</button>
+      </div>
+    </div>
+
+    <!-- AI 後台 UI（第四幕 HTML 疊層） -->
+    <div class="console" id="console" aria-hidden="true">
+      <div class="console__bar">
+        <i></i><i></i><i></i><span>SnatchOS · 後台</span>
+      </div>
+      <div class="console__input">
+        <span class="console__caret"></span>
+        <span class="console__typed" id="console-typed"></span>
+      </div>
+      <div class="console__result" id="console-result"></div>
+    </div>
+
+    <!-- 四週時間軸（第六幕 HTML 疊層） -->
+    <div class="timeline" id="timeline" aria-hidden="true">
+      <div class="timeline__track"><i id="timeline-fill"></i></div>
+      <ul class="timeline__weeks">
+        <li><b>W1</b><span>盤點與接資料</span></li>
+        <li><b>W2</b><span>設定與串接 LINE</span></li>
+        <li><b>W3</b><span>試營運 · 員工上手</span></li>
+        <li class="is-end"><b>W4</b><span>正式上線</span></li>
+      </ul>
+    </div>
+
+    <!-- 進度刻度 -->
+    <nav class="progress" id="progress" aria-hidden="true">
+      <ol>
+        <li data-act="0"></li><li data-act="1"></li><li data-act="2"></li>
+        <li data-act="3"></li><li data-act="4"></li><li data-act="5"></li><li data-act="6"></li>
+      </ol>
+    </nav>
+
+    <!-- 捲動空間：每一幕一屏 -->
+    <div class="scroll-space">
+      <div class="scroll-space__panel"></div>
+      <div class="scroll-space__panel"></div>
+      <div class="scroll-space__panel"></div>
+      <div class="scroll-space__panel"></div>
+      <div class="scroll-space__panel"></div>
+      <div class="scroll-space__panel"></div>
+      <div class="scroll-space__panel"></div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

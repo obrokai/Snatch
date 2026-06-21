@@ -1,0 +1,23 @@
+{
+  "name": "snatchos-3d",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "SnatchOS 官網 — Three.js 七幕 3D 場景捲動體驗",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "gsap": "^3.12.5",
+    "lenis": "^1.1.13",
+    "three": "^0.169.0"
+  },
+  "devDependencies": {
+    "vite": "^5.4.8"
+  },
+  "allowScripts": {
+    "esbuild@0.21.5": true
+  }
+}
