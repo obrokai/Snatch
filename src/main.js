@@ -1,4 +1,6 @@
 import * as THREE from "three";
+import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
+import { Reflector } from "three/addons/objects/Reflector.js";
 import Lenis from "lenis";
 import "./style.css";
 
@@ -27,6 +29,8 @@ renderer.setSize(innerWidth, innerHeight);
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.05;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 const scene = new THREE.Scene();
 scene.background = COLD_BG;
@@ -34,6 +38,23 @@ const fog = new THREE.FogExp2("#0a0a0d", 0.055);
 scene.fog = fog;
 
 const camera = new THREE.PerspectiveCamera(52, innerWidth / innerHeight, 0.1, 120);
+
+/* ---------------------------------------------------------------------- */
+/* 真實環境光（CC0 HDRI · Poly Haven）— 提供 PBR 反射與基底光               */
+/* 只當 environment（反射/IBL），背景仍維持暗色調，保留冷靜的高級感         */
+/* ---------------------------------------------------------------------- */
+const pmrem = new THREE.PMREMGenerator(renderer);
+pmrem.compileEquirectangularShader();
+new RGBELoader().load(
+  `${import.meta.env.BASE_URL}hdri/venue_1k.hdr`,
+  (hdr) => {
+    const envMap = pmrem.fromEquirectangular(hdr).texture;
+    scene.environment = envMap;
+    scene.environmentIntensity = 0.4; // 克制，避免洗掉暗調
+    hdr.dispose();
+    pmrem.dispose();
+  }
+);
 
 /* ---------------------------------------------------------------------- */
 /* Lights                                                                 */
@@ -47,6 +68,15 @@ scene.add(hemi);
 
 const keyLight = new THREE.DirectionalLight("#fff1e6", 0.5);
 keyLight.position.set(4, 9, 6);
+keyLight.castShadow = true;
+keyLight.shadow.mapSize.set(2048, 2048);
+keyLight.shadow.camera.near = 0.5;
+keyLight.shadow.camera.far = 45;
+keyLight.shadow.camera.left = -14;
+keyLight.shadow.camera.right = 14;
+keyLight.shadow.camera.top = 14;
+keyLight.shadow.camera.bottom = -14;
+keyLight.shadow.bias = -0.0004;
 scene.add(keyLight);
 
 // 門口的辨識光暈（冷白 + 微青）
@@ -78,6 +108,9 @@ for (let i = 0; i < 6; i++) {
 const counterSpot = new THREE.SpotLight("#fff3ea", 0, 14, Math.PI / 6, 0.5, 1.5);
 counterSpot.position.set(-4, 4.2, -1);
 counterSpot.target.position.set(-4, 0, -3);
+counterSpot.castShadow = true;
+counterSpot.shadow.mapSize.set(1024, 1024);
+counterSpot.shadow.bias = -0.0005;
 scene.add(counterSpot, counterSpot.target);
 
 /* ---------------------------------------------------------------------- */
@@ -85,8 +118,9 @@ scene.add(counterSpot, counterSpot.target);
 /* ---------------------------------------------------------------------- */
 const matFloor = new THREE.MeshStandardMaterial({
   color: "#0d0b0a",
-  roughness: 0.4,
-  metalness: 0.6,
+  roughness: 0.26,
+  metalness: 0.7,
+  envMapIntensity: 0.8,
 });
 const matWall = new THREE.MeshStandardMaterial({
   color: "#0b0a09",
@@ -119,6 +153,7 @@ scene.add(world);
 const floor = new THREE.Mesh(new THREE.PlaneGeometry(16, 40), matFloor);
 floor.rotation.x = -Math.PI / 2;
 floor.position.set(0, 0, -5);
+floor.receiveShadow = true;
 world.add(floor);
 
 // 地板格線
@@ -138,10 +173,30 @@ const rightWall = leftWall.clone();
 rightWall.rotation.y = -Math.PI / 2;
 rightWall.position.set(6.5, 4.5, -5);
 world.add(rightWall);
+leftWall.receiveShadow = true;
+rightWall.receiveShadow = true;
 
 const backWall = new THREE.Mesh(new THREE.PlaneGeometry(13, 9), matWall);
 backWall.position.set(0, 4.5, -15);
+backWall.receiveShadow = true;
 world.add(backWall);
+
+/* ---- 鏡牆（健身房招牌元素 · 真實平面反射） ---- */
+const mirror = new Reflector(new THREE.PlaneGeometry(7, 3.4), {
+  color: 0x6f6a63,
+  textureWidth: 1024,
+  textureHeight: 1024,
+});
+mirror.rotation.y = -Math.PI / 2;
+mirror.position.set(6.42, 1.85, -8.5);
+world.add(mirror);
+// 鏡框
+const mirrorFrame = new THREE.Mesh(
+  new THREE.BoxGeometry(0.08, 3.7, 7.3),
+  new THREE.MeshStandardMaterial({ color: "#1b1916", roughness: 0.5, metalness: 0.6 })
+);
+mirrorFrame.position.set(6.46, 1.85, -8.5);
+world.add(mirrorFrame);
 
 const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(16, 40), matWall);
 ceiling.rotation.x = Math.PI / 2;
@@ -213,7 +268,7 @@ const gate = new THREE.Group();
 gate.position.set(0, 0, 2.4);
 world.add(gate);
 const postMat = new THREE.MeshStandardMaterial({
-  color: "#222d36",
+  color: "#2c2925",
   roughness: 0.3,
   metalness: 0.85,
   transparent: true,
@@ -297,6 +352,7 @@ function addRack(x, z) {
     g.add(plate);
   }
   g.add(frame, frame2, top);
+  g.traverse((m) => (m.castShadow = true));
   g.position.set(x, 0, z);
   return g;
 }
@@ -309,10 +365,58 @@ function addBench(x, z) {
   const legB = legA.clone();
   legB.position.z = -0.7;
   g.add(pad, legA, legB);
+  g.traverse((m) => (m.castShadow = true));
   g.position.set(x, 0, z);
   return g;
 }
-world.add(addRack(4, -7), addRack(4.2, -10.5), addBench(2.6, -8.5), addBench(3.2, -11.5));
+
+// 啞鈴架（左右各一排重量球）
+function addDumbbellRack(x, z, rot = 0) {
+  const g = new THREE.Group();
+  const stand = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.9, 0.5), matMetal);
+  stand.position.y = 0.45;
+  g.add(stand);
+  for (let i = 0; i < 5; i++) {
+    const r = 0.1 + i * 0.012;
+    const db = new THREE.Mesh(
+      new THREE.CapsuleGeometry(r, 0.12, 4, 10),
+      new THREE.MeshStandardMaterial({ color: "#1a1816", roughness: 0.4, metalness: 0.7 })
+    );
+    db.rotation.z = Math.PI / 2;
+    db.position.set(-0.7 + i * 0.34, 0.95, 0);
+    g.add(db);
+  }
+  g.traverse((m) => (m.castShadow = true));
+  g.position.set(x, 0, z);
+  g.rotation.y = rot;
+  return g;
+}
+
+// 地墊（暖橘點綴 · 呼應品牌色）
+function addMat(x, z) {
+  const m = new THREE.Mesh(
+    new THREE.BoxGeometry(2, 0.04, 2),
+    new THREE.MeshStandardMaterial({ color: "#2a1206", roughness: 0.95, metalness: 0 })
+  );
+  m.position.set(x, 0.02, z);
+  m.receiveShadow = true;
+  return m;
+}
+
+world.add(
+  addRack(4, -7),
+  addRack(4.2, -10.5),
+  addBench(2.6, -8.5),
+  addBench(3.2, -11.5),
+  addDumbbellRack(-4.6, -8, Math.PI / 2),
+  addMat(1.5, -6),
+  addMat(-1.4, -9.5)
+);
+
+// 櫃檯 / 店員 / 閘門投射陰影
+[counter, staff, gate].forEach((grp) => grp.traverse((m) => {
+  if (m.isMesh) m.castShadow = true;
+}));
 
 // 全貌時亮起的招牌（act5）
 const sign = new THREE.Mesh(

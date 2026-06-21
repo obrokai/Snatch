@@ -8,10 +8,14 @@
 
 ## 技術
 
-- **Three.js** — 程序化建出的場館 3D 空間（門、閘門、櫃檯、店員、器材、燈帶）。
+- **Three.js** — 程序化建出的場館 3D 空間（門、閘門、櫃檯、店員、啞鈴架、地墊、鏡牆、燈帶）。
+  - **HDRI 環境光（IBL）**：CC0 HDRI 提供 PBR 反射與基底光，地板呈真實鏡面反射。
+  - **即時陰影**（PCFSoft）、**鏡牆平面反射**（Reflector）。
 - **GSAP**（已安裝，供日後微調用）
 - **Lenis** — 平滑捲動。
 - **Vite** — 開發與打包。
+
+配色對齊現行站台：暖橘 accent `#FF6B1A`（soft `#FF8A47` / deep `#E85D0A`）+ 近黑底 `#0a0a0d` + 白字。
 
 固定全螢幕 canvas 當作 3D 舞台，捲動驅動「鏡頭沿動線推進／左轉／拉遠」；
 每一幕的文案與 UI（LINE 手機、AI 後台、四週時間軸）以 HTML 疊層淡入淡出。
@@ -43,3 +47,7 @@ npm run preview    # 預覽打包結果
 
 純靜態，產物在 `dist/`。可直接接 Vercel（與現行站台同平台）：
 framework = Vite，build command = `npm run build`，output = `dist`。
+
+## 素材授權
+
+- `public/hdri/venue_1k.hdr` — Poly Haven「Empty Warehouse 01」（作者 Sergej Majboroda），**CC0 公眾領域**，可商用、免標註。
