@@ -11,8 +11,8 @@ import "./style.css";
 if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 scrollTo(0, 0);
 
-const COLD_BG = new THREE.Color("#070a0f");
-const ACCENT = new THREE.Color("#5fe3c8");
+const COLD_BG = new THREE.Color("#0a0a0d");
+const ACCENT = new THREE.Color("#ff6b1a");
 
 /* ---------------------------------------------------------------------- */
 /* Renderer / Scene / Camera                                              */
@@ -30,7 +30,7 @@ renderer.toneMappingExposure = 1.05;
 
 const scene = new THREE.Scene();
 scene.background = COLD_BG;
-const fog = new THREE.FogExp2("#070a0f", 0.055);
+const fog = new THREE.FogExp2("#0a0a0d", 0.055);
 scene.fog = fog;
 
 const camera = new THREE.PerspectiveCamera(52, innerWidth / innerHeight, 0.1, 120);
@@ -38,14 +38,14 @@ const camera = new THREE.PerspectiveCamera(52, innerWidth / innerHeight, 0.1, 12
 /* ---------------------------------------------------------------------- */
 /* Lights                                                                 */
 /* ---------------------------------------------------------------------- */
-const ambient = new THREE.AmbientLight("#9fc4d8", 0.35);
+const ambient = new THREE.AmbientLight("#c4bcb2", 0.35);
 scene.add(ambient);
 
 // 收束時才亮起的天空光（讓「整理後」像旗艦店一樣開闊明亮）
-const hemi = new THREE.HemisphereLight("#dcefff", "#0c1620", 0);
+const hemi = new THREE.HemisphereLight("#ffe9d6", "#15110d", 0);
 scene.add(hemi);
 
-const keyLight = new THREE.DirectionalLight("#dff0ff", 0.5);
+const keyLight = new THREE.DirectionalLight("#fff1e6", 0.5);
 keyLight.position.set(4, 9, 6);
 scene.add(keyLight);
 
@@ -61,21 +61,21 @@ for (let i = 0; i < 6; i++) {
   const strip = new THREE.Mesh(
     new THREE.BoxGeometry(0.25, 0.08, 2.4),
     new THREE.MeshStandardMaterial({
-      color: "#0b0f14",
-      emissive: "#bcd6e6",
+      color: "#14110d",
+      emissive: "#ffe8d4",
       emissiveIntensity: 1.4,
     })
   );
   strip.position.set(0, 4.4, z);
   scene.add(strip);
-  const lp = new THREE.PointLight("#cfe4f2", 0.55, 9, 2);
+  const lp = new THREE.PointLight("#ffeada", 0.55, 9, 2);
   lp.position.set(0, 4.1, z);
   scene.add(lp);
   ceilingLights.push(lp);
 }
 
 // 櫃檯聚光
-const counterSpot = new THREE.SpotLight("#eaf6ff", 0, 14, Math.PI / 6, 0.5, 1.5);
+const counterSpot = new THREE.SpotLight("#fff3ea", 0, 14, Math.PI / 6, 0.5, 1.5);
 counterSpot.position.set(-4, 4.2, -1);
 counterSpot.target.position.set(-4, 0, -3);
 scene.add(counterSpot, counterSpot.target);
@@ -84,27 +84,27 @@ scene.add(counterSpot, counterSpot.target);
 /* Materials                                                              */
 /* ---------------------------------------------------------------------- */
 const matFloor = new THREE.MeshStandardMaterial({
-  color: "#0c1116",
+  color: "#0d0b0a",
   roughness: 0.4,
   metalness: 0.6,
 });
 const matWall = new THREE.MeshStandardMaterial({
-  color: "#0a0e13",
+  color: "#0b0a09",
   roughness: 0.9,
   metalness: 0.1,
 });
-// 收束時把空間「打亮」：地板/牆面色調往乾淨亮灰過渡
-const FLOOR_DARK = new THREE.Color("#0c1116");
-const FLOOR_LIT = new THREE.Color("#2b3a45");
-const WALL_DARK = new THREE.Color("#0a0e13");
-const WALL_LIT = new THREE.Color("#202d38");
+// 收束時把空間「打亮」：地板/牆面色調往乾淨暖灰（近 paper）過渡
+const FLOOR_DARK = new THREE.Color("#0d0b0a");
+const FLOOR_LIT = new THREE.Color("#34302b");
+const WALL_DARK = new THREE.Color("#0b0a09");
+const WALL_LIT = new THREE.Color("#2a2620");
 const matMetal = new THREE.MeshStandardMaterial({
-  color: "#1a232c",
+  color: "#22201d",
   roughness: 0.35,
   metalness: 0.8,
 });
 const matDark = new THREE.MeshStandardMaterial({
-  color: "#10161c",
+  color: "#14110e",
   roughness: 0.7,
   metalness: 0.4,
 });
@@ -122,7 +122,7 @@ floor.position.set(0, 0, -5);
 world.add(floor);
 
 // 地板格線
-const grid = new THREE.GridHelper(40, 40, "#1c2a33", "#121a21");
+const grid = new THREE.GridHelper(40, 40, "#2a241e", "#181410");
 grid.position.set(0, 0.01, -5);
 grid.material.transparent = true;
 grid.material.opacity = 0.35;
@@ -165,11 +165,11 @@ doorGroup.add(jambL, jambR, lintel);
 
 // 自動門（兩扇玻璃，會在 act0 滑開）
 const glassMat = new THREE.MeshStandardMaterial({
-  color: "#7fb8c9",
+  color: "#b3ada3",
   roughness: 0.1,
   metalness: 0.2,
   transparent: true,
-  opacity: 0.28,
+  opacity: 0.24,
 });
 const doorPanelL = new THREE.Mesh(new THREE.BoxGeometry(1.5, 4, 0.08), glassMat);
 doorPanelL.position.set(-0.78, 2, 0.05);
@@ -239,15 +239,15 @@ const counterBody = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.1, 3.4), matMeta
 counterBody.position.y = 0.55;
 const counterTop = new THREE.Mesh(
   new THREE.BoxGeometry(1.9, 0.12, 3.7),
-  new THREE.MeshStandardMaterial({ color: "#28333d", roughness: 0.25, metalness: 0.7 })
+  new THREE.MeshStandardMaterial({ color: "#33302b", roughness: 0.25, metalness: 0.7 })
 );
 counterTop.position.y = 1.16;
 counter.add(counterBody, counterTop);
 
 // 櫃檯螢幕（act4 會發亮）
 const screenMat = new THREE.MeshStandardMaterial({
-  color: "#05080b",
-  emissive: "#173a44",
+  color: "#0a0807",
+  emissive: "#5a2c0c",
   emissiveIntensity: 0.6,
 });
 const screen = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.7, 1.1), screenMat);
@@ -266,7 +266,7 @@ counter.add(clutter);
 const staff = new THREE.Group();
 staff.position.set(-4, 0, -3.2);
 const bodyMat = new THREE.MeshStandardMaterial({
-  color: "#3a4753",
+  color: "#4a443d",
   roughness: 0.7,
   metalness: 0.1,
   transparent: true,
@@ -318,7 +318,7 @@ world.add(addRack(4, -7), addRack(4.2, -10.5), addBench(2.6, -8.5), addBench(3.2
 const sign = new THREE.Mesh(
   new THREE.PlaneGeometry(4.4, 0.9),
   new THREE.MeshStandardMaterial({
-    color: "#05080b",
+    color: "#0a0807",
     emissive: ACCENT,
     emissiveIntensity: 0,
     transparent: true,

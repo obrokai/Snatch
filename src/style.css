@@ -1,11 +1,16 @@
 :root {
-  --bg: #070a0f;
-  --ink: #eef3f8;
-  --ink-soft: rgba(238, 243, 248, 0.62);
-  --ink-faint: rgba(238, 243, 248, 0.32);
-  --accent: #5fe3c8;
-  --accent-soft: rgba(95, 227, 200, 0.16);
-  --line: rgba(238, 243, 248, 0.12);
+  /* 配色對齊現行站台：暖橘 accent + 近黑底 + 白字 */
+  --bg: #0a0a0d;
+  --bg2: #0d0d12;
+  --paper: #fbfaf8;
+  --ink: #ffffff;
+  --ink-soft: #9a9aa2;
+  --ink-faint: #6c6c75;
+  --accent: #ff6b1a;
+  --accent-soft: #ff8a47;
+  --accent-deep: #e85d0a;
+  --accent-glow: rgba(255, 107, 26, 0.16);
+  --line: rgba(255, 255, 255, 0.12);
   --serif: "Noto Sans TC", system-ui, sans-serif;
   --mono: "Manrope", "Noto Sans TC", sans-serif;
 }
@@ -132,7 +137,7 @@ body {
 }
 .ov__cta:hover {
   background: var(--accent);
-  color: #06231d;
+  color: #0a0a0d;
   transform: translateY(-2px);
 }
 
@@ -141,7 +146,8 @@ body {
   position: fixed;
   inset: 0;
   z-index: 50;
-  background: radial-gradient(120% 120% at 50% 40%, #0c1218 0%, #04060a 70%);
+  background: radial-gradient(120% 90% at 80% 0%, rgba(255, 107, 26, 0.12), transparent 55%),
+    radial-gradient(120% 120% at 50% 45%, #14110d 0%, #05050a 72%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -477,7 +483,7 @@ body {
 }
 .console__bars div {
   flex: 1;
-  background: linear-gradient(180deg, var(--accent), rgba(95, 227, 200, 0.25));
+  background: linear-gradient(180deg, var(--accent), rgba(255, 107, 26, 0.25));
   border-radius: 4px 4px 0 0;
   position: relative;
   transition: height 0.8s cubic-bezier(0.22, 1, 0.36, 1);
@@ -584,9 +590,9 @@ body {
 @media (max-width: 640px) {
   .ov__title { letter-spacing: 0; }
   .progress { right: 1rem; }
-  /* 手機置中、文案改放上方，避免在窄螢幕互相遮擋 */
-  .phone { left: 50%; top: 56%; transform: translate(-50%, -50%) translateY(40px) scale(0.74); }
-  .ov--phone { justify-content: flex-start; padding-top: 8vh; align-items: center; text-align: center; padding-right: clamp(1.5rem, 8vw, 7rem); }
+  /* 手機置中偏下、文案放上方，避免在窄螢幕互相遮擋 */
+  .phone { left: 50%; top: 62%; transform: translate(-50%, -50%) translateY(30px) scale(0.62); }
+  .ov--phone { justify-content: flex-start; padding-top: 5vh; align-items: center; text-align: center; padding-right: 0; padding-left: clamp(1.2rem, 6vw, 3rem); }
   .ov--phone .ov__title, .ov--phone .ov__sub { max-width: 100%; }
   .scroll-hint span { display: none; }
 }
