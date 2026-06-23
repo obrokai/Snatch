@@ -441,14 +441,16 @@ world.add(sign);
 /* p 為全站捲動進度 0..1                                                   */
 /* ---------------------------------------------------------------------- */
 const waypoints = [
-  { p: 0.0, pos: [0, 1.75, 11], look: [0, 1.9, 0] },     // 店門外
-  { p: 0.14, pos: [0, 1.7, 6.6], look: [0, 1.9, -1] },   // 走近門口
-  { p: 0.28, pos: [0, 1.7, 3.0], look: [0, 1.6, -3] },   // 進門，看 LINE
-  { p: 0.42, pos: [0.6, 1.7, 0.4], look: [-3.4, 1.4, -3.6] }, // 走向櫃檯·左轉
-  { p: 0.57, pos: [-1.9, 1.55, -1.2], look: [-4.3, 1.5, -4] }, // 櫃檯螢幕前
-  { p: 0.71, pos: [3.8, 4.4, 6.8], look: [-1.4, 1, -6] },  // 拉遠·全貌
-  { p: 0.85, pos: [2.6, 3.4, 7.8], look: [-0.4, 1.3, -5] }, // 時間軸
-  { p: 1.0, pos: [0, 2.1, 9], look: [0, 1.6, -3] },       // 出口
+  { p: 0.0, pos: [0, 1.72, 8], look: [0, 1.75, -2] },        // 00 進站（門內）
+  { p: 0.1, pos: [0, 1.7, 5.5], look: [0, 1.65, -3] },       // 01 三件事·大廳
+  { p: 0.22, pos: [0.5, 1.62, 3.2], look: [-1, 1.45, -5] },  // 02 痛點·深入
+  { p: 0.34, pos: [0, 1.7, 1.6], look: [0, 1.6, -6] },       // 03 系統全覽·中軸
+  { p: 0.45, pos: [0.3, 1.7, 0.6], look: [-1.5, 1.55, -4] }, // 04 LINE 一站式
+  { p: 0.56, pos: [-1.9, 1.55, -1.2], look: [-4.2, 1.5, -4] }, // 05 AI 後台·櫃檯
+  { p: 0.66, pos: [-0.5, 1.75, -2.2], look: [3, 1.6, -7] },  // 06 合規·轉向場上
+  { p: 0.77, pos: [3.8, 4.3, 6.6], look: [-1.4, 1, -6] },    // 07 三個改變·拉遠全景
+  { p: 0.88, pos: [2.4, 3.2, 7.6], look: [-0.4, 1.35, -5] }, // 08 FAQ·沉穩
+  { p: 1.0, pos: [0, 2.1, 9], look: [0, 1.6, -3] },          // 09 出口
 ];
 
 const _pos = new THREE.Vector3();
@@ -483,21 +485,20 @@ function sampleCamera(p) {
 /* ---------------------------------------------------------------------- */
 /* 幕的工具                                                               */
 /* ---------------------------------------------------------------------- */
-const ACTS = 7;
+const ACTS = 10;
+const ACT_PHONE = 4; // LINE 一站式（會員端）
+const ACT_CONSOLE = 5; // AI 對話式後台
 const actEls = [...document.querySelectorAll(".ov")];
 const dots = [...document.querySelectorAll(".progress li")];
 const phone = document.getElementById("phone");
 const phoneMenuBtns = [...document.querySelectorAll("#phone-menu button")];
-const phoneBubble = document.querySelector(".phone__bubble");
 const consoleEl = document.getElementById("console");
 const consoleTyped = document.getElementById("console-typed");
 const consoleResult = document.getElementById("console-result");
-const timelineEl = document.getElementById("timeline");
-const timelineFill = document.getElementById("timeline-fill");
 const progressNav = document.getElementById("progress");
 const scrollHint = document.getElementById("scroll-hint");
 
-// 每一幕的局部進度
+// 每一站的局部進度
 function actLocal(p, i) {
   return THREE.MathUtils.clamp(p * ACTS - i, 0, 1);
 }
@@ -508,51 +509,48 @@ function bell(t) {
   return 1;
 }
 
-const BUBBLES = {
-  book: "幫我約禮拜四晚上的課",
-  buy: "我要再買 10 堂",
-  leave: "下週一我請假",
-  balance: "我還剩幾堂？",
-};
-
 let consoleStage = -1;
 function setConsole(local) {
-  // 兩段式：先問流失會員，再要營收圖表
+  // 兩段式：先問即時收入，再要本月營收看板
   if (local < 0.5) {
-    const q = "這個月哪些會員快流失了？";
-    const n = Math.floor((local / 0.42) * q.length);
+    const q = "今天收了多少？";
+    const n = Math.floor((local / 0.4) * q.length);
     consoleTyped.textContent = q.slice(0, Math.min(n, q.length));
     if (consoleStage !== 0) {
       consoleStage = 0;
       consoleResult.innerHTML = "";
     }
-    if (local > 0.4 && !consoleResult.children.length) {
+    if (local > 0.38 && !consoleResult.children.length) {
       consoleResult.innerHTML = `
         <div class="console__card">
-          <h4>可能流失的會員 · 本月</h4>
-          <div class="console__row"><b>陳怡君</b><span class="console__tag">21 天未到</span></div>
-          <div class="console__row"><b>林柏宇</b><span class="console__tag">剩 1 堂未約</span></div>
-          <div class="console__row"><b>王思婷</b><span class="console__tag">續約到期</span></div>
+          <h4>今日 · 即時看板</h4>
+          <div class="console__kpis">
+            <div><span>今日收入</span><b>NT$12,600</b><i>▲ +8% 昨日</i></div>
+            <div><span>本月新增</span><b>18 人</b><i>▲ +3 人</i></div>
+            <div><span>在場人數</span><b>24</b><i>尖峰時段</i></div>
+          </div>
         </div>`;
     }
   } else {
-    const q = "把這個月的營收，按教練分一下。";
-    const n = Math.floor(((local - 0.5) / 0.42) * q.length);
+    const q = "本月收入比上個月多多少？";
+    const n = Math.floor(((local - 0.5) / 0.4) * q.length);
     consoleTyped.textContent = q.slice(0, Math.min(n, q.length));
     if (consoleStage !== 1) {
       consoleStage = 1;
       consoleResult.innerHTML = "";
     }
-    if (local > 0.86 && !consoleResult.children.length) {
+    if (local > 0.84 && !consoleResult.children.length) {
       consoleResult.innerHTML = `
         <div class="console__card">
-          <h4>本月營收 · 依教練</h4>
+          <h4>本月收入 · 近 5 個月</h4>
           <div class="console__bars">
-            <div data-name="Ray" style="height:78%"></div>
-            <div data-name="Mia" style="height:96%"></div>
-            <div data-name="Jay" style="height:54%"></div>
-            <div data-name="Ann" style="height:67%"></div>
+            <div data-name="2月" style="height:48%"></div>
+            <div data-name="3月" style="height:60%"></div>
+            <div data-name="4月" style="height:72%"></div>
+            <div data-name="5月" style="height:80%"></div>
+            <div data-name="6月" style="height:96%"></div>
           </div>
+          <div class="console__note">本月 NT$284K · 較上月 ▲ +12%</div>
         </div>`;
     }
   }
@@ -566,8 +564,8 @@ let activePhone = -1;
 function applyProgress(p) {
   sampleCamera(p);
 
-  // 全站「開闊度」：拉遠時整個空間變亮、霧變薄（進來前 vs 整理後）
-  const openness = smootherstep(THREE.MathUtils.clamp((p - 0.555) / 0.09, 0, 1));
+  // 全站「開闊度」：走到「三個改變／全景」時整個空間變亮、霧變薄
+  const openness = smootherstep(THREE.MathUtils.clamp((p - 0.66) / 0.1, 0, 1));
   fog.density = THREE.MathUtils.lerp(0.055, 0.012, openness);
   ambient.intensity = THREE.MathUtils.lerp(0.35, 0.95, openness);
   hemi.intensity = openness * 0.85;
@@ -579,69 +577,57 @@ function applyProgress(p) {
   matWall.color.lerpColors(WALL_DARK, WALL_LIT, openness);
   grid.material.opacity = 0.35 + openness * 0.25;
 
-  /* 第一幕：閘門消失 + 門滑開 */
+  /* 進站：門禁掃描 → 閘門淡出、自動門滑開（前 ~1.5 站內完成） */
+  const enter = smootherstep(THREE.MathUtils.clamp(p / 0.12, 0, 1));
+  gate.children.forEach((c) => (c.material.opacity = 1 - enter));
+  gate.scale.setScalar(1 - 0.4 * enter);
+  doorPanelL.position.x = -0.78 - enter * 1.4;
+  doorPanelR.position.x = 0.78 + enter * 1.4;
   const a0 = actLocal(p, 0);
-  gate.children.forEach((c) => (c.material.opacity = 1 - smootherstep(a0)));
-  gate.scale.setScalar(1 - 0.4 * smootherstep(a0));
-  const open = smootherstep(THREE.MathUtils.clamp((a0 - 0.15) / 0.6, 0, 1));
-  doorPanelL.position.x = -0.78 - open * 1.4;
-  doorPanelR.position.x = 0.78 + open * 1.4;
   scanRing.material.opacity = bell(a0) * 0.9;
   scanRing.scale.setScalar(0.6 + a0 * 0.9);
 
-  /* 第三幕：店員走向場上、櫃檯雜物消失 */
-  const a2 = actLocal(p, 2);
-  const walk = smootherstep(a2);
-  staff.position.x = -4 + walk * 2.6;   // 從櫃檯後 → 場上
+  /* 櫃檯（AI 後台站）：店員走向場上 + 螢幕點亮 + 聚光 */
+  const aCon = actLocal(p, ACT_CONSOLE);
+  const walk = smootherstep(aCon);
+  staff.position.x = -4 + walk * 2.6;
   staff.position.z = -3.2 - walk * 2.4;
-  bodyMat.opacity = 1 - 0.45 * walk;     // 淡，但不刪除（不是「裁掉」）
+  bodyMat.opacity = 1 - 0.45 * walk;
   clutter.children.forEach((c) => {
     c.position.y = 1.36 + walk * 1.2;
     if (!c.material.transparent) c.material.transparent = true;
     c.material.opacity = 1 - walk;
   });
-
-  /* 第四幕：螢幕點亮 + 聚光 */
-  const a3 = actLocal(p, 3);
-  screenMat.emissiveIntensity = 0.6 + bell(a3) * 2.4;
-  counterSpot.intensity = bell(a3) * 3.2;
+  screenMat.emissiveIntensity = 0.6 + bell(aCon) * 2.4;
+  counterSpot.intensity = bell(aCon) * 3.2;
 
   /* ---- HTML 疊層：文案 ---- */
   actEls.forEach((el, i) => {
     const local = actLocal(p, i);
     const o = bell(local);
     el.style.opacity = o.toFixed(3);
-    el.style.transform = `translateY(${(1 - o) * 28}px)`;
+    el.style.transform = `translateY(${(1 - o) * 26}px)`;
+    el.style.pointerEvents = o > 0.6 ? "auto" : "none";
   });
 
-  /* ---- 第二幕 LINE 手機 ---- */
-  const a1 = actLocal(p, 1);
-  const pO = bell(a1);
+  /* ---- 會員 LINE 手機 ---- */
+  const aPh = actLocal(p, ACT_PHONE);
+  const pO = bell(aPh);
   phone.style.opacity = pO.toFixed(3);
   phone.style.transform = `translate(-50%,-50%) translateY(${(1 - pO) * 40}px) scale(${0.92 + pO * 0.08})`;
-  const idx = Math.min(3, Math.floor(a1 * 4));
-  if (a1 > 0 && a1 < 1 && idx !== activePhone) {
+  const idx = Math.min(phoneMenuBtns.length - 1, Math.floor(aPh * phoneMenuBtns.length));
+  if (aPh > 0 && aPh < 1 && idx !== activePhone) {
     activePhone = idx;
     phoneMenuBtns.forEach((b, k) => b.classList.toggle("is-active", k === idx));
-    const key = phoneMenuBtns[idx].dataset.key;
-    phoneBubble.textContent = BUBBLES[key];
-    phoneBubble.classList.add("is-me");
   }
 
-  /* ---- 第四幕 AI console ---- */
-  const cO = bell(a3);
+  /* ---- AI 對話式後台 console ---- */
+  const cO = bell(aCon);
   consoleEl.style.opacity = cO.toFixed(3);
   consoleEl.style.transform = `translate(-50%,-50%) translateY(${(1 - cO) * 30}px)`;
-  if (a3 > 0 && a3 < 1) setConsole(a3);
+  if (aCon > 0 && aCon < 1) setConsole(aCon);
 
-  /* ---- 第六幕 時間軸 ---- */
-  const a5 = actLocal(p, 5);
-  const tO = bell(a5);
-  timelineEl.style.opacity = tO.toFixed(3);
-  timelineEl.style.transform = `translateX(-50%) translateY(${(1 - tO) * 30}px)`;
-  timelineFill.style.width = `${smootherstep(THREE.MathUtils.clamp(a5 * 1.1, 0, 1)) * 88 + 6}%`;
-
-  /* ---- 進度刻度 ---- */
+  /* ---- 章節索引 ---- */
   const cur = Math.min(ACTS - 1, Math.floor(p * ACTS + 0.001));
   dots.forEach((d, i) => d.classList.toggle("is-active", i === cur));
   progressNav.classList.toggle("is-visible", p > 0.02);
@@ -666,6 +652,14 @@ dots.forEach((li) => {
 document.querySelector(".topbar__brand").addEventListener("click", (e) => {
   e.preventDefault();
   lenis.scrollTo(0);
+});
+// 站內跳轉（Hero「看系統如何運作」、媒體卡片等）
+document.querySelectorAll("[data-goto]").forEach((el) => {
+  el.addEventListener("click", (e) => {
+    e.preventDefault();
+    const act = +el.dataset.goto;
+    lenis.scrollTo(((act + 0.5) / ACTS) * lenis.limit);
+  });
 });
 
 /* ---------------------------------------------------------------------- */

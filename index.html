@@ -47,54 +47,127 @@
       <div class="scroll-hint__mouse"><i></i></div>
     </div>
 
-    <!-- 固定文案疊層（每一幕一塊，依捲動淡入淡出） -->
+    <!-- 固定文案疊層（每一站一塊，依捲動淡入淡出） -->
     <div class="overlays" id="overlays">
-      <!-- 第一幕 -->
-      <section class="ov" data-act="0">
-        <p class="ov__kicker"><i>01</i><span>無摩擦入場</span></p>
-        <h2 class="ov__title">會員不必停下。<br />門，自己認得他。</h2>
+      <!-- 00 進站 · Hero -->
+      <section class="ov ov--center" data-act="0">
+        <p class="ov__kicker ov__kicker--center"><i>01</i><span>Snatch OS · 健身房智慧管理系統</span></p>
+        <h2 class="ov__title ov__title--big">健身房的每一步，<br />都自動跑起來。</h2>
+        <p class="ov__sub ov__sub--center">AI 整合 × LINE 綁定 × 一站式營運。學員加官方 LINE 就能綁定會員、約課、購課、收提醒，不必下載 App；櫃檯到老闆報表，同一套系統全包。</p>
+        <div class="hero__cta">
+          <a class="ov__cta ov__cta--solid" href="mailto:hello@snatch.tw?subject=預約免費諮詢"><span>預約免費諮詢</span></a>
+          <a class="ov__cta ov__cta--ghost" href="#" data-goto="3"><span>看系統如何運作</span></a>
+        </div>
+        <ul class="hero__chips">
+          <li>AI 智慧管理</li><li>LINE 綁定學員</li><li>對話式後台</li><li>營運報表</li>
+        </ul>
       </section>
 
-      <!-- 第二幕 -->
-      <section class="ov ov--phone" data-act="1">
-        <p class="ov__kicker"><i>02</i><span>LINE 一站式</span></p>
-        <h2 class="ov__title">他要的一切，<br />都在他早就打開的那個 App 裡。</h2>
-        <p class="ov__sub">沒有新 App、沒有新帳號。約課、買堂數、請假、查剩餘堂數 —— 全程都在 LINE。</p>
+      <!-- 01 三件只有 Snatch 做到的事 -->
+      <section class="ov ov--center" data-act="1">
+        <p class="ov__kicker ov__kicker--center"><i>02</i><span>三件 · 只有 Snatch 做到的事</span></p>
+        <div class="pillars">
+          <div class="pillar"><b>01</b><h3>綁定，就開始</h3><p>加 LINE 一鍵綁定會員，第一天就上線。</p></div>
+          <div class="pillar"><b>02</b><h3>開口，就操作</h3><p>後台用「說的」就能查、就能管。</p></div>
+          <div class="pillar"><b>03</b><h3>合規，零成本</h3><p>合規經營預付會費，成本 NT$0。</p></div>
+        </div>
       </section>
 
-      <!-- 第三幕 -->
-      <section class="ov" data-act="2">
-        <p class="ov__kicker"><i>03</i><span>人力被解放</span></p>
-        <h2 class="ov__title">櫃檯，<br />不再需要有人被綁在這裡。</h2>
-        <p class="ov__sub">店員不必困在櫃檯收錢點名，走到場上，做更有價值的事。</p>
+      <!-- 02 痛點 -->
+      <section class="ov ov--top" data-act="2">
+        <p class="ov__kicker ov__kicker--center"><i>03</i><span>為什麼要做這套</span></p>
+        <h2 class="ov__title ov__title--center">現在的健身房，<br />每天都在漏掉什麼？</h2>
+        <div class="pains">
+          <div class="pain"><h4>人工作業耗時</h4><p>查會籍、對堂數全靠櫃檯人工，尖峰時段大排長龍。</p></div>
+          <div class="pain"><h4>會籍到期沒人追</h4><p>到期前無人提醒，續約全靠會員自己記得。</p></div>
+          <div class="pain"><h4>沉睡會員默默流失</h4><p>一個月沒來也沒人發現，等發現已經退會。</p></div>
+          <div class="pain"><h4>教練課數據一團亂</h4><p>剩幾堂、誰完課、薪資多少，全靠人工對帳。</p></div>
+          <div class="pain"><h4>工具分散難整合</h4><p>門禁、LINE、報表各自為政，資料兜不起來。</p></div>
+          <div class="pain pain--fix"><h4>一套系統</h4><p>把這些缺口，一次補起來。</p></div>
+        </div>
       </section>
 
-      <!-- 第四幕 -->
-      <section class="ov ov--top" data-act="3">
-        <p class="ov__kicker"><i>04</i><span>AI 對話式後台</span></p>
-        <h2 class="ov__title">你不用學系統。<br />系統聽你的話。</h2>
+      <!-- 03 系統全覽 -->
+      <section class="ov ov--center" data-act="3">
+        <p class="ov__kicker ov__kicker--center"><i>04</i><span>系統全覽</span></p>
+        <h2 class="ov__title ov__title--center">一套系統，<br />串起四個接觸點。</h2>
+        <div class="hub">
+          <div class="hub__node"><b>學員綁定</b><span>LINE 一鍵綁定會員</span></div>
+          <div class="hub__node"><b>前台管理</b><span>對話式後台</span></div>
+          <div class="hub__core"><i>Snatch OS</i><span>AI 自動化引擎 · Adaptive UI · LINE Webhook</span></div>
+          <div class="hub__node"><b>營運報表</b><span>老闆 / 教練視角</span></div>
+          <div class="hub__node"><b>LINE 會員</b><span>查詢 · 預約 · 通知</span></div>
+        </div>
       </section>
 
-      <!-- 第五幕 -->
-      <section class="ov ov--center" data-act="4">
-        <p class="ov__kicker ov__kicker--center"><i>05</i><span>整理之後</span></p>
-        <h2 class="ov__title ov__title--big">該消失的，都消失了。<br />剩下的，是一家終於像樣的店。</h2>
+      <!-- 04 LINE 一站式（會員端） -->
+      <section class="ov ov--phone" data-act="4">
+        <p class="ov__kicker"><i>05</i><span>差異化 · LINE 綁定學員</span></p>
+        <h2 class="ov__title">會員的一切，<br />都在熟悉的 LINE 裡。</h2>
+        <ul class="feat">
+          <li><b>加 LINE 一鍵綁定</b><span>輸入手機與驗證碼即啟用，不必下載 App。</span></li>
+          <li><b>約課、購課、查會籍</b><span>圖文選單點了就到，剩餘堂數、綁定教練都在一頁。</span></li>
+          <li><b>自動提醒不流失</b><span>到期、堂數不足、沉睡喚回，透過 LINE 主動推播。</span></li>
+        </ul>
       </section>
 
-      <!-- 第六幕 -->
-      <section class="ov" data-act="5">
-        <p class="ov__kicker"><i>06</i><span>無痛遷移</span></p>
-        <h2 class="ov__title">不用關店，不用熬。<br />四週，你的店就換上新引擎。</h2>
-        <p class="ov__sub">舊會員、剩多少堂、誰在請假，我們都接過來，不用你重 key。</p>
+      <!-- 05 AI 對話式後台（櫃檯 / 老闆端） -->
+      <section class="ov ov--top" data-act="5">
+        <p class="ov__kicker ov__kicker--center"><i>06</i><span>差異化 · 用 AI 管理健身房</span></p>
+        <h2 class="ov__title ov__title--center">用「說的」，<br />就能操作後台。</h2>
+        <p class="ov__sub ov__sub--center feat-inline">自然語言查詢與指令　·　AI 即時渲染對應 UI　·　主動盯住每個風險</p>
       </section>
 
-      <!-- 第七幕 -->
+      <!-- 06 零成本合規 -->
       <section class="ov ov--center" data-act="6">
-        <p class="ov__kicker ov__kicker--center"><i>07</i><span>下一步</span></p>
-        <h2 class="ov__title ov__title--big">來看看你的場館，<br />可以變成什麼樣子。</h2>
-        <a class="ov__cta" href="mailto:hello@snatch.tw?subject=預約一場 15 分鐘示範">
-          <span>預約一場 15 分鐘示範</span>
-          <em>聊聊你的場館，15 分鐘，不推銷。</em>
+        <p class="ov__kicker ov__kicker--center"><i>07</i><span>安全與合規</span></p>
+        <h2 class="ov__title ov__title--center">合規經營，<br />一毛錢成本都不用。</h2>
+        <div class="comply">
+          <div class="comply__rows">
+            <div class="comply__row"><b>信託（信託帳戶）</b><i>傳統做法 · NT$ 十幾萬起</i><u>不需要</u></div>
+            <div class="comply__row"><b>履約保障</b><i>傳統做法 · NT$ 十幾萬起</i><u>不需要</u></div>
+            <div class="comply__row"><b>質押</b><i>傳統做法 · NT$ 十幾萬起</i><u>不需要</u></div>
+          </div>
+          <div class="comply__zero"><span>你的合規成本</span><b>NT$0</b><em>同樣合規，別人花十幾萬～幾十萬，你花 NT$0。</em></div>
+        </div>
+      </section>
+
+      <!-- 07 三個改變 + 媒體 -->
+      <section class="ov ov--center" data-act="7">
+        <p class="ov__kicker ov__kicker--center"><i>08</i><span>導入之後 · 三個改變</span></p>
+        <div class="outcomes">
+          <div class="outcome"><b>留存 ↑</b><h3>會員留得住</h3><p>到期提醒、沉睡喚回、課程確認，主動經營每段關係。</p></div>
+          <div class="outcome"><b>人工 ↓</b><h3>櫃檯更省力</h3><p>AI 自動化流程、對話式操作，把人力留給服務。</p></div>
+          <div class="outcome"><b>數據可視</b><h3>決策有依據</h3><p>收入、人流、轉換、薪資，一個後台全看見。</p></div>
+        </div>
+        <a class="media" href="#" data-goto="9">
+          <span class="media__tag">媒體報導 · Meet 創業小聚 / 數位時代 · 2026.06.10</span>
+          <span class="media__title">15 分鐘、300 元一堂運動教練課，你會買單嗎？冷杉科技開拓醫美減重新戰場</span>
+        </a>
+      </section>
+
+      <!-- 08 常見問題 -->
+      <section class="ov ov--top" data-act="8">
+        <p class="ov__kicker ov__kicker--center"><i>09</i><span>常見問題</span></p>
+        <h2 class="ov__title ov__title--center">導入前，你可能想知道的。</h2>
+        <div class="faq" id="faq">
+          <details class="faq__item" open><summary>會員一定要下載 App 嗎？</summary><p>不用。學員只要加你的官方 LINE，輸入手機與驗證碼就能綁定會員，之後查會籍、約課、購課、收提醒全部在 LINE 裡完成。</p></details>
+          <details class="faq__item"><summary>現有的會員資料能轉進來嗎？</summary><p>可以。我們支援匯入你目前的會員名單與會籍、堂數資料，導入時會協助你把既有資料對應進系統，不必從零重建。</p></details>
+          <details class="faq__item"><summary>導入大概需要多久？</summary><p>視門市規模與資料量而定。我們會在諮詢時盤點需求，規劃設定、資料匯入與教育訓練的時程，讓櫃檯平順上手。</p></details>
+          <details class="faq__item"><summary>真的不用花信託 / 履約保證的費用嗎？</summary><p>Snatch OS 的服務模式讓你以合規方式經營預付會費，省去動輒十幾萬到幾十萬的成本。實際方案會在諮詢時依營運模式說明。</p></details>
+          <details class="faq__item"><summary>支援多教練、多門市嗎？</summary><p>支援。多教練排課、月結薪資都在同一頁完成；多門市需求也歡迎在諮詢時提出，我們會依規模提供方案。</p></details>
+          <details class="faq__item"><summary>怎麼收費？需要綁約嗎？</summary><p>方案與收費依門市規模與功能需求量身規劃。預約免費諮詢後，我們會了解你的營運狀況，提供清楚的報價與合作方式。</p></details>
+        </div>
+      </section>
+
+      <!-- 09 出口 CTA -->
+      <section class="ov ov--center" data-act="9">
+        <p class="ov__kicker ov__kicker--center"><i>10</i><span>下一步 · 免費諮詢</span></p>
+        <h2 class="ov__title ov__title--big">準備好讓系統<br />替你顧好每個環節了嗎？</h2>
+        <p class="ov__sub ov__sub--center">盤點門市需求 · 規劃導入時程</p>
+        <a class="ov__cta ov__cta--solid" href="mailto:hello@snatch.tw?subject=預約免費諮詢">
+          <span>預約免費諮詢</span>
+          <em>了解你的營運狀況，提供清楚的報價與合作方式。</em>
         </a>
         <footer class="ov__sign">
           <span class="ov__sign-mark">SNATCH<i>OS</i></span>
@@ -103,28 +176,33 @@
       </section>
     </div>
 
-    <!-- LINE 手機 UI（第二幕 HTML 疊層，crisp） -->
+    <!-- 會員 LINE UI（第 05 站 疊層，crisp） -->
     <div class="phone" id="phone" aria-hidden="true">
       <div class="phone__notch"></div>
       <div class="phone__header">
         <div class="phone__avatar"></div>
-        <div class="phone__name">你的健身房 官方帳號</div>
+        <div class="phone__name">星核健身房 LINE 官方帳號</div>
       </div>
-      <div class="phone__chat">
-        <div class="phone__bubble">嗨，今天想做什麼？</div>
+      <div class="phone__card">
+        <span class="phone__card-label">會籍狀態 · 有效</span>
+        <b class="phone__card-date">2026 / 12 / 31</b>
+        <span class="phone__card-sub">有效期限 · 剩餘 211 天</span>
       </div>
       <div class="phone__menu" id="phone-menu">
-        <button data-key="book"><span>＋</span>約課</button>
-        <button data-key="buy"><span>◇</span>買堂數</button>
-        <button data-key="leave"><span>⊘</span>請假</button>
-        <button data-key="balance"><span>≡</span>查剩餘堂數</button>
+        <button data-key="m1"><span>◎</span>我的會籍</button>
+        <button data-key="m2"><span>✦</span>我的教練</button>
+        <button data-key="m3"><span>＋</span>預約課程</button>
+        <button data-key="m4"><span>◇</span>線上購課</button>
+        <button data-key="m5"><span>≋</span>通知中心</button>
+        <button data-key="m6"><span>☎</span>聯絡櫃檯</button>
       </div>
+      <div class="phone__bind">綁定手機 · 立即啟用</div>
     </div>
 
-    <!-- AI 後台 UI（第四幕 HTML 疊層） -->
+    <!-- AI 對話式後台 UI（第 06 站 疊層） -->
     <div class="console" id="console" aria-hidden="true">
       <div class="console__bar">
-        <i></i><i></i><i></i><span>SnatchOS · 後台</span>
+        <i></i><i></i><i></i><span>app.starcore.fit · 即時看板</span>
       </div>
       <div class="console__input">
         <span class="console__caret"></span>
@@ -133,32 +211,27 @@
       <div class="console__result" id="console-result"></div>
     </div>
 
-    <!-- 四週時間軸（第六幕 HTML 疊層） -->
-    <div class="timeline" id="timeline" aria-hidden="true">
-      <div class="timeline__track"><i id="timeline-fill"></i></div>
-      <ul class="timeline__weeks">
-        <li><b>W1</b><span>盤點與接資料</span></li>
-        <li><b>W2</b><span>設定與串接 LINE</span></li>
-        <li><b>W3</b><span>試營運 · 員工上手</span></li>
-        <li class="is-end"><b>W4</b><span>正式上線</span></li>
-      </ul>
-    </div>
-
     <!-- 章節索引 -->
     <nav class="progress" id="progress" aria-hidden="true">
       <ol>
-        <li data-act="0"><b>01</b><span>無摩擦入場</span></li>
-        <li data-act="1"><b>02</b><span>LINE 一站式</span></li>
-        <li data-act="2"><b>03</b><span>人力被解放</span></li>
-        <li data-act="3"><b>04</b><span>AI 後台</span></li>
-        <li data-act="4"><b>05</b><span>整理之後</span></li>
-        <li data-act="5"><b>06</b><span>無痛遷移</span></li>
-        <li data-act="6"><b>07</b><span>下一步</span></li>
+        <li data-act="0"><b>01</b><span>進站</span></li>
+        <li data-act="1"><b>02</b><span>三件事</span></li>
+        <li data-act="2"><b>03</b><span>痛點</span></li>
+        <li data-act="3"><b>04</b><span>系統全覽</span></li>
+        <li data-act="4"><b>05</b><span>LINE 一站式</span></li>
+        <li data-act="5"><b>06</b><span>AI 後台</span></li>
+        <li data-act="6"><b>07</b><span>零成本合規</span></li>
+        <li data-act="7"><b>08</b><span>三個改變</span></li>
+        <li data-act="8"><b>09</b><span>常見問題</span></li>
+        <li data-act="9"><b>10</b><span>預約諮詢</span></li>
       </ol>
     </nav>
 
-    <!-- 捲動空間：每一幕一屏 -->
+    <!-- 捲動空間：每一站一屏 -->
     <div class="scroll-space">
+      <div class="scroll-space__panel"></div>
+      <div class="scroll-space__panel"></div>
+      <div class="scroll-space__panel"></div>
       <div class="scroll-space__panel"></div>
       <div class="scroll-space__panel"></div>
       <div class="scroll-space__panel"></div>
