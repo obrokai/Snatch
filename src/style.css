@@ -72,6 +72,21 @@ body {
   transform: translateY(28px);
   will-change: opacity, transform;
 }
+/* 可讀性遮罩：在繁忙的 3D 世界前，柔和壓暗文字背後 */
+.ov::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(78% 62% at 50% 46%, rgba(7, 6, 9, 0.62), rgba(7, 6, 9, 0) 80%);
+}
+.ov__title,
+.ov__title--big,
+.ov__sub,
+.ov__kicker {
+  text-shadow: 0 2px 28px rgba(0, 0, 0, 0.55), 0 1px 4px rgba(0, 0, 0, 0.5);
+}
 .ov--right {
   align-items: flex-end;
   text-align: right;
