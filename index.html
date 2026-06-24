@@ -49,7 +49,30 @@
         <li><b>UPTIME</b><span>99.99%</span></li>
       </ul>
 
-      <!-- 中央：人物剪影 + 流動圓環 -->
+      <!-- 滿版肖像背景 + 碎裂濾鏡 -->
+      <svg class="entry__filter-defs" aria-hidden="true">
+        <defs>
+          <filter id="shatter" x="-30%" y="-30%" width="160%" height="160%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.005" numOctaves="2" seed="7" result="noise">
+              <animate id="shatterFreq" attributeName="baseFrequency" begin="indefinite"
+                       dur="1.4s" values="0.005;0.06;0.18;0.42" keyTimes="0;0.45;0.75;1" fill="freeze" />
+            </feTurbulence>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="0">
+              <animate id="shatterScale" attributeName="scale" begin="shatterFreq.begin"
+                       dur="1.4s" values="0;60;220;500" keyTimes="0;0.45;0.75;1" fill="freeze" />
+            </feDisplacementMap>
+          </filter>
+        </defs>
+      </svg>
+      <div class="entry__photo-wrap" id="entry-photo">
+        <img class="entry__photo" src="/entry-portrait.png" alt="" />
+        <!-- RGB 分離疊層（is-scanning 觸發顯示） -->
+        <img class="entry__photo entry__photo--r" src="/entry-portrait.png" alt="" aria-hidden="true" />
+        <img class="entry__photo entry__photo--c" src="/entry-portrait.png" alt="" aria-hidden="true" />
+        <div class="entry__noise"></div>
+      </div>
+
+      <!-- 中央 frame：環/四角/掃描線/採樣點 -->
       <div class="entry__stage" id="entry-stage">
         <div class="entry__rings">
           <i class="entry__ring entry__ring--a"></i>
@@ -57,15 +80,11 @@
           <i class="entry__ring entry__ring--c"></i>
           <i class="entry__ring entry__ring--d"></i>
         </div>
-        <img class="entry__photo" id="entry-photo" src="/entry-portrait.png" alt="" />
-        <!-- 四角辨識框 -->
         <span class="entry__corner entry__corner--tl"></span>
         <span class="entry__corner entry__corner--tr"></span>
         <span class="entry__corner entry__corner--bl"></span>
         <span class="entry__corner entry__corner--br"></span>
-        <!-- 水平掃描線 -->
         <div class="entry__scanline"></div>
-        <!-- 採樣點 -->
         <i class="entry__point entry__point--p1"></i>
         <i class="entry__point entry__point--p2"></i>
         <i class="entry__point entry__point--p3"></i>
@@ -91,21 +110,8 @@
         <div class="boot__scan">
           <div class="boot__reticle">
             <span></span><span></span><span></span><span></span>
-            <!-- 線框臉部側影 -->
-            <svg class="boot__face" viewBox="0 0 100 130" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-              <!-- 頭顱輪廓 -->
-              <path d="M50 12 C 26 12 18 36 18 56 C 18 78 26 98 38 108 C 44 116 56 116 62 108 C 74 98 82 78 82 56 C 82 36 74 12 50 12 Z" opacity="0.9"/>
-              <!-- 眼睛 -->
-              <ellipse cx="36" cy="56" rx="5" ry="3" opacity="0.8"/>
-              <ellipse cx="64" cy="56" rx="5" ry="3" opacity="0.8"/>
-              <!-- 鼻樑 -->
-              <path d="M50 56 L 47 72 L 53 72 Z" opacity="0.6"/>
-              <!-- 嘴 -->
-              <path d="M40 86 Q 50 92 60 86" opacity="0.7"/>
-              <!-- 中軸 -->
-              <line x1="50" y1="12" x2="50" y2="116" opacity="0.25" stroke-dasharray="2 3"/>
-              <line x1="18" y1="56" x2="82" y2="56" opacity="0.25" stroke-dasharray="2 3"/>
-            </svg>
+            <!-- 3D 線框頭模 canvas -->
+            <canvas class="boot__head" id="boot-head-canvas"></canvas>
             <div class="boot__line"></div>
             <!-- 中央採樣點 -->
             <i class="boot__dot boot__dot--a"></i>

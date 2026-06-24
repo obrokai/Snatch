@@ -675,7 +675,119 @@ const bootStatus = document.getElementById("boot-status");
 const bootMetric = document.getElementById("boot-metric");
 const bootPulse = document.getElementById("boot-pulse");
 
+/* ---- Boot 用的小 3D 線框頭模 ---- */
+let bootHeadCleanup = null;
+function spinUpBootHead() {
+  const c = document.getElementById("boot-head-canvas");
+  if (!c) return;
+  const W = c.clientWidth || 180;
+  const H = c.clientHeight || 220;
+  const dpr = Math.min(devicePixelRatio, 2);
+  const r = new THREE.WebGLRenderer({ canvas: c, antialias: true, alpha: true });
+  r.setPixelRatio(dpr);
+  r.setSize(W, H, false);
+  const s = new THREE.Scene();
+  const cam = new THREE.PerspectiveCamera(38, W / H, 0.1, 30);
+  cam.position.set(0, 0.05, 4.2);
+
+  // 頭部：橢圓化的二十面體，稍微往臉部方向位移點以模擬鼻樑
+  const headGeo = new THREE.IcosahedronGeometry(1, 4);
+  {
+    const pos = headGeo.attributes.position;
+    const v = new THREE.Vector3();
+    for (let i = 0; i < pos.count; i++) {
+      v.fromBufferAttribute(pos, i);
+      // 拉長 Y、收窄 X、稍微壓扁 Z
+      v.y *= 1.32;
+      v.x *= 0.84;
+      v.z *= 0.96;
+      // 下顎收尖、額頭微寬
+      const t = v.y;
+      const taper = t < 0 ? 1 + t * 0.18 : 1 - t * 0.05;
+      v.x *= taper;
+      v.z *= taper;
+      // 鼻樑與額頭微凸（Z 軸方向，臉前面）
+      if (v.z > 0.4 && v.y > -0.3 && v.y < 0.4 && Math.abs(v.x) < 0.25) {
+        v.z += 0.06 * (1 - Math.abs(v.y) * 1.5);
+      }
+      pos.setXYZ(i, v.x, v.y, v.z);
+    }
+    headGeo.computeVertexNormals();
+  }
+
+  // 雙層：實體（極暗）+ 線框（橘色，主視覺）
+  const headSolid = new THREE.Mesh(
+    headGeo,
+    new THREE.MeshBasicMaterial({ color: "#06060a", transparent: true, opacity: 0.5 })
+  );
+  const headWire = new THREE.Mesh(
+    headGeo,
+    new THREE.MeshBasicMaterial({ color: 0xff6b1a, wireframe: true, transparent: true, opacity: 0.95 })
+  );
+  headWire.scale.setScalar(1.002);
+  s.add(headSolid, headWire);
+
+  // 採樣點：四個亮點漂浮在臉部前方
+  const pointGeo = new THREE.SphereGeometry(0.04, 12, 12);
+  const pointMat = new THREE.MeshBasicMaterial({ color: 0xff6b1a });
+  const points = [];
+  [[-0.3, 0.25, 1.0], [0.3, 0.25, 1.0], [0, -0.05, 1.05], [0, -0.4, 0.95]].forEach((p, i) => {
+    const m = new THREE.Mesh(pointGeo, pointMat.clone());
+    m.position.set(...p);
+    m.userData.off = i * 0.5;
+    s.add(m);
+    points.push(m);
+  });
+
+  let raf;
+  let alive = true;
+  const clk = new THREE.Clock();
+  function loop() {
+    if (!alive) return;
+    const t = clk.getElapsedTime();
+    // 緩慢左右搖頭，掃描中
+    headWire.rotation.y = Math.sin(t * 0.55) * 0.55;
+    headSolid.rotation.y = headWire.rotation.y;
+    headWire.rotation.x = Math.sin(t * 0.35) * 0.08;
+    headSolid.rotation.x = headWire.rotation.x;
+    // 採樣點脈動
+    points.forEach((m, i) => {
+      const k = 0.5 + 0.5 * Math.sin(t * 2.2 + m.userData.off);
+      m.scale.setScalar(0.6 + k * 0.7);
+      m.material.opacity = 0.3 + k * 0.7;
+      m.material.transparent = true;
+    });
+    r.render(s, cam);
+    raf = requestAnimationFrame(loop);
+  }
+  loop();
+
+  // 處理 boot canvas 尺寸（reticle 是 180x230 css，已用 90% 充滿）
+  const ro = new ResizeObserver(() => {
+    const w = c.clientWidth || W;
+    const h = c.clientHeight || H;
+    r.setSize(w, h, false);
+    cam.aspect = w / h;
+    cam.updateProjectionMatrix();
+  });
+  ro.observe(c);
+
+  bootHeadCleanup = () => {
+    alive = false;
+    cancelAnimationFrame(raf);
+    ro.disconnect();
+    headGeo.dispose();
+    headSolid.material.dispose();
+    headWire.material.dispose();
+    pointGeo.dispose();
+    points.forEach((p) => p.material.dispose());
+    r.dispose();
+  };
+}
+
 function runBoot() {
+  // 啟動 3D 線框頭模
+  spinUpBootHead();
   const steps = [
     [0,   "建立連線…",         () => "—— pts"],
     [14,  "偵測臉部…",         (pct) => `${Math.floor(pct * 1.2)} pts`],
@@ -703,6 +815,8 @@ function runBoot() {
         boot.classList.add("is-done");
         document.getElementById("topbar").classList.add("is-visible");
         lenis.start();
+        // 等淡出完成再 dispose 小 renderer
+        setTimeout(() => bootHeadCleanup?.(), 1100);
       }, 900);
     }
   }, 55);
@@ -713,10 +827,16 @@ const entryCta = document.getElementById("entry-cta");
 entryCta.addEventListener("click", () => {
   if (entry.classList.contains("is-scanning")) return;
   entry.classList.add("is-scanning");
-  // 1.5 秒：剪影旋轉到正面、放大、淡出
+  // 觸發 SVG 碎裂濾鏡（feTurbulence + feDisplacementMap）
+  try {
+    document.getElementById("shatterFreq")?.beginElement();
+    document.getElementById("shatterScale")?.beginElement();
+  } catch (e) {
+    /* Safari 對 beginElement 行為不一致，失敗不致命 */
+  }
+  // 1.5 秒：剪影旋轉 + 碎裂 + 淡出
   setTimeout(() => {
     entry.classList.add("is-done");
-    // 接力：啟動既有的線框臉部掃描 boot 序幕
     runBoot();
   }, 1500);
 });
