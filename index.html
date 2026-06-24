@@ -65,10 +65,16 @@
         </defs>
       </svg>
       <div class="entry__photo-wrap" id="entry-photo">
-        <img class="entry__photo" src="/entry-portrait.png" alt="" />
-        <!-- RGB 分離疊層（is-scanning 觸發顯示） -->
-        <img class="entry__photo entry__photo--r" src="/entry-portrait.png" alt="" aria-hidden="true" />
-        <img class="entry__photo entry__photo--c" src="/entry-portrait.png" alt="" aria-hidden="true" />
+        <!-- 點擊掃描後播放：側臉 → 轉向正面（品牌 switch 影片） -->
+        <video
+          class="entry__photo entry__video"
+          id="entry-video"
+          src="/entry-switch.mov"
+          poster="/entry-portrait.png"
+          muted
+          playsinline
+          preload="auto"
+        ></video>
         <div class="entry__noise"></div>
       </div>
 
@@ -80,8 +86,6 @@
           <i class="entry__ring entry__ring--c"></i>
           <i class="entry__ring entry__ring--d"></i>
         </div>
-        <!-- 大型 3D 線框頭模（掃描時疊在剪影上、往右轉） -->
-        <canvas class="entry__head" id="entry-head"></canvas>
         <span class="entry__corner entry__corner--tl"></span>
         <span class="entry__corner entry__corner--tr"></span>
         <span class="entry__corner entry__corner--bl"></span>

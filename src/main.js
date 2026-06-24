@@ -637,6 +637,11 @@ function tick(time) {
     if (introT >= 1) {
       introPlaying = false;
       lenis.start();
+      // 直接帶入標題：輕輕捲到 hero 文案顯示處
+      if (!window.__titleShown) {
+        window.__titleShown = true;
+        setTimeout(() => lenis.scrollTo(lenis.limit * 0.05, { duration: 1.6 }), 120);
+      }
     }
   } else if (introT === 0) {
     // 進場前：閘門掃描光束待機脈動
@@ -665,123 +670,53 @@ const bootStatus = document.getElementById("boot-status");
 const bootMetric = document.getElementById("boot-metric");
 const bootPulse = document.getElementById("boot-pulse");
 
-/* ---- 大型 3D 線框頭模（疊在剪影上、掃描時往右轉） ---- */
-let scanHeadCleanup = null;
-let setHeadProgress = () => {};
-function spinUpScanHead() {
-  const c = document.getElementById("entry-head");
-  if (!c) return;
-  const W = c.clientWidth || 460;
-  const H = c.clientHeight || 560;
-  const r = new THREE.WebGLRenderer({ canvas: c, antialias: true, alpha: true });
-  r.setPixelRatio(Math.min(devicePixelRatio, 2));
-  r.setSize(W, H, false);
-  const s = new THREE.Scene();
-  const cam = new THREE.PerspectiveCamera(34, W / H, 0.1, 30);
-  cam.position.set(0, 0.05, 4.6);
-
-  // 頭部：橢圓化二十面體，額頭微寬、下顎收尖、鼻樑前凸
-  const headGeo = new THREE.IcosahedronGeometry(1, 5);
-  {
-    const pos = headGeo.attributes.position;
-    const v = new THREE.Vector3();
-    for (let i = 0; i < pos.count; i++) {
-      v.fromBufferAttribute(pos, i);
-      v.y *= 1.34; v.x *= 0.82; v.z *= 0.98;
-      const taper = v.y < 0 ? 1 + v.y * 0.2 : 1 - v.y * 0.05;
-      v.x *= taper; v.z *= taper;
-      if (v.z > 0.4 && v.y > -0.35 && v.y < 0.45 && Math.abs(v.x) < 0.26) {
-        v.z += 0.08 * (1 - Math.abs(v.y) * 1.4);
-      }
-      pos.setXYZ(i, v.x, v.y, v.z);
-    }
-    headGeo.computeVertexNormals();
-  }
-  const headSolid = new THREE.Mesh(headGeo, new THREE.MeshBasicMaterial({ color: "#0a0708", transparent: true, opacity: 0.55 }));
-  const headWire = new THREE.Mesh(headGeo, new THREE.MeshBasicMaterial({ color: 0xff6b1a, wireframe: true, transparent: true, opacity: 0.95 }));
-  headWire.scale.setScalar(1.002);
-  const headGroup = new THREE.Group();
-  headGroup.add(headSolid, headWire);
-  s.add(headGroup);
-
-  // 臉部特徵採樣點
-  const pointGeo = new THREE.SphereGeometry(0.035, 12, 12);
-  const points = [];
-  [[-0.32, 0.28, 0.95], [0.32, 0.28, 0.95], [0, 0, 1.08], [0, -0.32, 1.0], [0, -0.62, 0.78]].forEach((p, i) => {
-    const m = new THREE.Mesh(pointGeo, new THREE.MeshBasicMaterial({ color: 0xff6b1a, transparent: true }));
-    m.position.set(...p);
-    m.userData.off = i * 0.45;
-    headGroup.add(m); // 跟著頭一起轉
-    points.push(m);
-  });
-
-  let raf, alive = true, prog = 0;
-  setHeadProgress = (p) => { prog = p; };
-  const clk = new THREE.Clock();
-  function loop() {
-    if (!alive) return;
-    const t = clk.getElapsedTime();
-    // 掃描進度 → 頭部偏擺：從面向左前方轉到面向右前方（往右轉）
-    const yaw = THREE.MathUtils.lerp(-0.95, 0.95, smootherstep(prog));
-    headGroup.rotation.y = yaw + Math.sin(t * 1.1) * 0.06;
-    headGroup.rotation.x = Math.sin(t * 0.5) * 0.05;
-    points.forEach((m) => {
-      const k = 0.5 + 0.5 * Math.sin(t * 2.4 + m.userData.off);
-      m.scale.setScalar(0.6 + k * 0.8);
-      m.material.opacity = 0.35 + k * 0.65;
-    });
-    r.render(s, cam);
-    raf = requestAnimationFrame(loop);
-  }
-  loop();
-
-  const ro = new ResizeObserver(() => {
-    const w = c.clientWidth || W, h = c.clientHeight || H;
-    r.setSize(w, h, false);
-    cam.aspect = w / h;
-    cam.updateProjectionMatrix();
-  });
-  ro.observe(c);
-
-  scanHeadCleanup = () => {
-    alive = false;
-    cancelAnimationFrame(raf);
-    ro.disconnect();
-    headGeo.dispose();
-    headSolid.material.dispose();
-    headWire.material.dispose();
-    pointGeo.dispose();
-    points.forEach((p) => p.material.dispose());
-    r.dispose();
-  };
-}
-
-// 掃描階段：狀態列推進 + 同步頭部往右轉，完成後 → 碎裂進場 + 自動開門
+// 掃描階段：播放「轉正」影片 + 狀態列推進；影片結束 → 碎裂進場 + 自動開門
 function runScan() {
-  spinUpScanHead();
+  const video = document.getElementById("entry-video");
   const steps = [
     [0,   "建立連線…",       () => "—— pts"],
     [14,  "偵測臉部…",       (pct) => `${Math.floor(pct * 1.2)} pts`],
     [34,  "建立 3D 臉模…",   (pct) => `${Math.floor(pct * 1.8)} / 168 pts`],
-    [58,  "比對會員資料…",   () => `MATCH · 99.${Math.floor(Math.random() * 8)}%`],
-    [82,  "授權核發中…",     () => "GRANTED"],
+    [60,  "比對會員資料…",   () => `MATCH · 99.${Math.floor(Math.random() * 8)}%`],
+    [85,  "授權核發中…",     () => "GRANTED"],
     [100, "通過 · 開啟閘門",  () => "ACCESS GRANTED"],
   ];
+  let done = false;
+  const finish = () => {
+    if (done) return;
+    done = true;
+    bootBar.style.width = "100%";
+    bootStatus.textContent = "通過 · 開啟閘門";
+    bootStatus.classList.add("is-ok");
+    bootMetric.textContent = "ACCESS GRANTED";
+    bootPulse.classList.add("is-flash");
+    enterWorld();
+  };
+
   let pct = 0;
   const iv = setInterval(() => {
-    pct = Math.min(100, pct + 0.5 + Math.random() * 0.9);
-    bootBar.style.width = pct + "%";
-    setHeadProgress(pct / 100);
+    // 進度跟著影片時間走（影片就是臉轉正的過程）
+    if (video && video.duration) {
+      pct = Math.min(100, (video.currentTime / video.duration) * 100);
+    } else {
+      pct = Math.min(100, pct + 0.8);
+    }
+    bootBar.style.width = pct.toFixed(0) + "%";
     const step = steps.filter((s) => pct >= s[0]).pop();
     if (step) { bootStatus.textContent = step[1]; bootMetric.textContent = step[2](pct); }
-    if (pct >= 100) {
-      clearInterval(iv);
-      bootStatus.classList.add("is-ok");
-      bootPulse.classList.add("is-flash");
-      // 進場：剪影碎裂 + 整層淡出 → 啟動 3D 世界自動過場（開門飛入）
-      enterWorld();
-    }
-  }, 55);
+    if (pct >= 99.5 || (video && video.ended)) { clearInterval(iv); finish(); }
+  }, 80);
+
+  if (video) {
+    video.currentTime = 0;
+    const p = video.play();
+    if (p && p.catch) p.catch(() => {});
+    video.addEventListener("ended", () => { clearInterval(iv); finish(); }, { once: true });
+    // 保險：影片若無法播放，最長 5 秒後仍進場
+    setTimeout(finish, 5200);
+  } else {
+    setTimeout(finish, 4200);
+  }
 }
 
 function enterWorld() {
@@ -797,7 +732,6 @@ function enterWorld() {
     entry.classList.add("is-done");
     document.getElementById("topbar").classList.add("is-visible");
     introPlaying = true;
-    setTimeout(() => scanHeadCleanup?.(), 1100);
   }, 1200);
 }
 
