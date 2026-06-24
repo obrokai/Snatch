@@ -16,6 +16,15 @@
     <!-- 固定全螢幕 3D 舞台 -->
     <canvas id="stage"></canvas>
 
+    <!-- 滿版開門過場：兩扇門板向左右滑開，露出 3D 世界 -->
+    <div id="portal" class="portal" aria-hidden="true">
+      <div class="portal__panel portal__panel--l">
+        <span class="portal__mark">SNATCH<i>OS</i></span>
+      </div>
+      <div class="portal__panel portal__panel--r"></div>
+      <div class="portal__seam"></div>
+    </div>
+
     <!-- 品牌列（序幕後浮現） -->
     <header class="topbar" id="topbar">
       <a class="topbar__brand" href="#top">SNATCH<span>OS</span></a>

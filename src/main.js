@@ -327,6 +327,7 @@ const gateScan = new THREE.Mesh(
 );
 gateScan.position.set(0, 2.4, 0.25);
 gate.add(jambL, jambR, lintel, panelL, panelR, gateScan);
+gate.visible = false; // 改用滿版 CSS 門板過場，隱藏 3D 小閘門
 scene.add(gate);
 
 /* ---- 沿走廊佈置：閘門 → 裝置 + 少量抽象體（補景深氣氛） ---- */
@@ -560,8 +561,8 @@ let lastT = 0;
 // 自動進場過場（掃描完成後觸發）
 let introPlaying = false;
 let introT = 0;
-const INTRO_DUR = 2.8;
-const INTRO_START = { pos: [0, 1.4, 12], look: [0, 1.4, 4] };
+const INTRO_DUR = 2.0;
+const INTRO_START = { pos: [0, 1.2, 7], look: [0, 0.9, -9] }; // 門開時鏡頭緩緩推進
 function tick(time) {
   lenis.raf(time);
   const t = clock.getElapsedTime();
@@ -720,19 +721,23 @@ function runScan() {
 }
 
 function enterWorld() {
+  const portal = document.getElementById("portal");
+  // 1) 柔光 bloom + 影像順放大淡出；門板就位（接縫亮線蓄勢）
   entry.classList.add("is-entering");
-  try {
-    document.getElementById("shatterFreq")?.beginElement();
-    document.getElementById("shatterScale")?.beginElement();
-  } catch (e) {
-    /* Safari beginElement 行為不一致，失敗不致命 */
-  }
-  // 剪影碎裂 ~1.2s 後：淡出 entry、同時啟動 3D 世界自動過場（開門飛入）
+  bootPulse.classList.add("is-flash");
+  portal.classList.add("is-armed");
+  // 2) entry 淡出，露出關閉的滿版門
   setTimeout(() => {
     entry.classList.add("is-done");
     document.getElementById("topbar").classList.add("is-visible");
+  }, 750);
+  // 3) 滿版開門（門板左右滑開）+ 鏡頭緩緩推進
+  setTimeout(() => {
+    portal.classList.add("is-open");
     introPlaying = true;
-  }, 1200);
+  }, 1150);
+  // 4) 門開完成後收起 portal
+  setTimeout(() => portal.classList.remove("is-armed"), 3000);
 }
 
 entryCta.addEventListener("click", () => {
