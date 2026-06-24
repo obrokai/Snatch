@@ -72,7 +72,7 @@
         <div class="entry__noise"></div>
       </div>
 
-      <!-- 中央 frame：環/四角/掃描線/採樣點 -->
+      <!-- 中央 scan stage：放大的 3D 線框頭 + 框 -->
       <div class="entry__stage" id="entry-stage">
         <div class="entry__rings">
           <i class="entry__ring entry__ring--a"></i>
@@ -80,6 +80,8 @@
           <i class="entry__ring entry__ring--c"></i>
           <i class="entry__ring entry__ring--d"></i>
         </div>
+        <!-- 大型 3D 線框頭模（掃描時疊在剪影上、往右轉） -->
+        <canvas class="entry__head" id="entry-head"></canvas>
         <span class="entry__corner entry__corner--tl"></span>
         <span class="entry__corner entry__corner--tr"></span>
         <span class="entry__corner entry__corner--bl"></span>
@@ -91,8 +93,8 @@
         <i class="entry__point entry__point--p4"></i>
       </div>
 
-      <!-- 副標 + CTA -->
-      <div class="entry__foot">
+      <!-- 閒置：副標 + CTA -->
+      <div class="entry__foot" id="entry-foot">
         <p class="entry__lead">啟動你的場館。<br /><span>請點擊以開始臉部辨識，進入 Snatch OS。</span></p>
         <button class="entry__cta" id="entry-cta">
           <span class="entry__cta-dot"></span>
@@ -101,32 +103,17 @@
         </button>
         <p class="entry__legal">點擊代表你同意系統收集模擬辨識資料（僅用於展示）。</p>
       </div>
-    </div>
 
-    <!-- 進站載入 / 人臉掃描序幕 -->
-    <div id="boot" class="boot">
-      <div class="boot__inner">
-        <div class="boot__brand">SNATCH<span>OS</span><i id="boot-version">v1.0 · BIOMETRIC ACCESS</i></div>
-        <div class="boot__scan">
-          <div class="boot__reticle">
-            <span></span><span></span><span></span><span></span>
-            <!-- 3D 線框頭模 canvas -->
-            <canvas class="boot__head" id="boot-head-canvas"></canvas>
-            <div class="boot__line"></div>
-            <!-- 中央採樣點 -->
-            <i class="boot__dot boot__dot--a"></i>
-            <i class="boot__dot boot__dot--b"></i>
-            <i class="boot__dot boot__dot--c"></i>
-            <i class="boot__dot boot__dot--d"></i>
-          </div>
+      <!-- 掃描中：狀態讀數 -->
+      <div class="entry__scanui" id="entry-scanui">
+        <div class="entry__readout">
+          <span class="entry__status" id="boot-status">建立連線…</span>
+          <span class="entry__metric" id="boot-metric">— · — pts</span>
         </div>
-        <div class="boot__readout">
-          <span class="boot__status" id="boot-status">建立連線…</span>
-          <span class="boot__metric" id="boot-metric">— · — pts</span>
-        </div>
-        <div class="boot__bar"><i id="boot-bar"></i></div>
-        <div class="boot__pulse" id="boot-pulse"></div>
+        <div class="entry__bar"><i id="boot-bar"></i></div>
       </div>
+
+      <div class="boot__pulse" id="boot-pulse"></div>
     </div>
 
     <!-- 捲動提示 -->

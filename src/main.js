@@ -311,42 +311,9 @@ function placeDevice(group, pos, scale, spinY = 0.04, stationP = 0.5) {
   return group;
 }
 
-/* ---- 臉部辨識頭像（閘門上方，掃描中） ---- */
-const scanHeadGroup = new THREE.Group();
-scanHeadGroup.position.set(0, 6.8, 0);
-// 線框頭部
-const scanHead = new THREE.Mesh(
-  deform(new THREE.IcosahedronGeometry(0.85, 4), 0.05),
-  new THREE.MeshBasicMaterial({ color: "#ffffff", wireframe: true, transparent: true, opacity: 0.55 })
-);
-scanHeadGroup.add(scanHead);
-// 四角辨識框
-function reticleCorner(x, y) {
-  const g = new THREE.Group();
-  const lineMat = new THREE.LineBasicMaterial({ color: ACCENT, transparent: true, opacity: 0.95 });
-  const armA = new THREE.Line(new THREE.BufferGeometry().setFromPoints([
-    new THREE.Vector3(0, 0, 0), new THREE.Vector3(0.35 * x, 0, 0)
-  ]), lineMat);
-  const armB = new THREE.Line(new THREE.BufferGeometry().setFromPoints([
-    new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0.35 * y, 0)
-  ]), lineMat);
-  g.add(armA, armB);
-  g.position.set(x * 1.15, y * 1.15, 0);
-  return g;
-}
-scanHeadGroup.add(reticleCorner(-1, 1), reticleCorner(1, 1), reticleCorner(-1, -1), reticleCorner(1, -1));
-// 掃描橫線（在頭部上下掃）
-const scanBeam = new THREE.Mesh(
-  new THREE.PlaneGeometry(2.6, 0.04),
-  new THREE.MeshBasicMaterial({ color: ACCENT, transparent: true, opacity: 0.9 })
-);
-scanBeam.position.set(0, 0, 0.01);
-scanHeadGroup.add(scanBeam);
-scene.add(scanHeadGroup);
-
-/* ---- 入口閘門（掃描臉部 → 進場）：camera 開場即穿過 ---- */
+/* ---- 入口閘門（掃描完成後自動開啟 → camera 自動穿過） ---- */
 const gate = new THREE.Group();
-gate.position.set(0, 0, 2.6);
+gate.position.set(0, 0, 4);
 const jambGeo = new THREE.BoxGeometry(0.5, 5.2, 0.5, 1, 8, 1);
 const jambL = wfGroup(jambGeo, { wireOpacity: 0.45 }); jambL.position.set(-2.6, 2.4, 0);
 const jambR = wfGroup(jambGeo, { wireOpacity: 0.45 }); jambR.position.set(2.6, 2.4, 0);
@@ -406,10 +373,10 @@ scene.add(dust);
 /* ---------------------------------------------------------------------- */
 /* 鏡頭路徑：向前飛行、輕微擺盪，穿過構造物                                 */
 /* ---------------------------------------------------------------------- */
+// 捲動路徑（p=0 已在閘門內側 = 自動過場的終點）
+const HERO = { pos: [0, 1.1, 1], look: [0, 0.8, -11] };
 const waypoints = [
-  { p: 0.0, pos: [0, 1.6, 16], look: [0, 2.6, 2.6] },     // 站在閘門前，看著掃描頭
-  { p: 0.04, pos: [0, 1.5, 10], look: [0, 2.0, 2.6] },    // 逼近，閘門開始開
-  { p: 0.09, pos: [0, 1.5, 2], look: [0, 1.2, -6] },      // 穿過閘門
+  { p: 0.0, pos: HERO.pos, look: HERO.look },             // 進站完成，站在閘門內
   { p: 0.13, pos: [1.6, 1, -3], look: [-1, 0.5, -14] },
   { p: 0.22, pos: [-2.2, 0.2, -16], look: [1, 0.6, -28] },
   { p: 0.33, pos: [1.4, 1.2, -30], look: [-1.2, 0.4, -42] },
@@ -517,11 +484,6 @@ let activePhone = -1;
 function applyProgress(p) {
   sampleCamera(p);
 
-  // 入口閘門：開場即向兩側滑開，camera 穿過進場
-  const enter = smootherstep(THREE.MathUtils.clamp(p / 0.06, 0, 1));
-  panelL.position.x = -0.95 - enter * 2.4;
-  panelR.position.x = 0.95 + enter * 2.4;
-
   // 色彩過境：靠近構造物群（中段、收束）讓世界更橘、更暖；空檔回到暗
   const warm = 0.5 - 0.5 * Math.cos(p * Math.PI * 2 * 1.5);
   scene.background.copy(BG_DARK).lerp(BG_WARM, warm * 0.7);
@@ -593,6 +555,13 @@ document.querySelectorAll("[data-goto]").forEach((el) => {
 /* ---------------------------------------------------------------------- */
 const clock = new THREE.Clock();
 let renderProgress = 0;
+let lastT = 0;
+
+// 自動進場過場（掃描完成後觸發）
+let introPlaying = false;
+let introT = 0;
+const INTRO_DUR = 2.8;
+const INTRO_START = { pos: [0, 1.4, 12], look: [0, 1.4, 4] };
 function tick(time) {
   lenis.raf(time);
   const t = clock.getElapsedTime();
@@ -641,18 +610,38 @@ function tick(time) {
   const pulse = 0.5 + 0.5 * Math.sin(t * 1.5);
   screenGlows.forEach((m) => { m.material.opacity = 0.22 + pulse * 0.22; });
 
-  // 閘門掃描光束：上下掃描、進場後淡出
-  const entered = THREE.MathUtils.clamp(renderProgress / 0.09, 0, 1);
+  // 閘門掃描光束：上下掃描
   gateScan.position.y = 2.4 + Math.sin(t * 1.6) * 2.0;
-  gateScan.material.opacity = (1 - entered) * (0.5 + 0.4 * Math.abs(Math.sin(t * 1.6)));
 
-  // 頭像掃描：beam 上下掃描、頭部緩慢轉動、進場後整組淡出
-  scanBeam.position.y = Math.sin(t * 2) * 0.9;
-  scanBeam.material.opacity = (1 - entered) * 0.9;
-  scanHead.rotation.y = t * 0.4;
-  scanHeadGroup.children.forEach((c) => {
-    if (c.material) c.material.opacity = (1 - entered) * (c === scanHead ? 0.55 : 0.95);
-  });
+  const dt = Math.min(0.05, t - lastT);
+  lastT = t;
+
+  // 自動進場過場：飛越閘門 → 抵達 HERO，期間閘門自動開啟
+  if (introPlaying) {
+    introT = Math.min(1, introT + dt / INTRO_DUR);
+    const e = smootherstep(introT);
+    _pos.set(
+      THREE.MathUtils.lerp(INTRO_START.pos[0], HERO.pos[0], e),
+      THREE.MathUtils.lerp(INTRO_START.pos[1], HERO.pos[1], e),
+      THREE.MathUtils.lerp(INTRO_START.pos[2], HERO.pos[2], e)
+    );
+    _look.set(
+      THREE.MathUtils.lerp(INTRO_START.look[0], HERO.look[0], e),
+      THREE.MathUtils.lerp(INTRO_START.look[1], HERO.look[1], e),
+      THREE.MathUtils.lerp(INTRO_START.look[2], HERO.look[2], e)
+    );
+    const go = smootherstep(THREE.MathUtils.clamp((introT - 0.12) / 0.5, 0, 1));
+    panelL.position.x = -0.95 - go * 2.8;
+    panelR.position.x = 0.95 + go * 2.8;
+    gateScan.material.opacity = (1 - go) * 0.85;
+    if (introT >= 1) {
+      introPlaying = false;
+      lenis.start();
+    }
+  } else if (introT === 0) {
+    // 進場前：閘門掃描光束待機脈動
+    gateScan.material.opacity = 0.55 + 0.35 * Math.abs(Math.sin(t * 1.6));
+  }
 
   camera.position.copy(_pos);
   camera.position.x += Math.sin(t * 0.35) * 0.12;
@@ -667,112 +656,94 @@ function tick(time) {
 requestAnimationFrame(tick);
 
 /* ---------------------------------------------------------------------- */
-/* 進站序幕                                                               */
+/* Stage 0：肖像入口 → 掃描（大型 3D 頭，往右轉）→ 自動開門進場            */
 /* ---------------------------------------------------------------------- */
-const boot = document.getElementById("boot");
+const entry = document.getElementById("entry");
+const entryCta = document.getElementById("entry-cta");
 const bootBar = document.getElementById("boot-bar");
 const bootStatus = document.getElementById("boot-status");
 const bootMetric = document.getElementById("boot-metric");
 const bootPulse = document.getElementById("boot-pulse");
 
-/* ---- Boot 用的小 3D 線框頭模 ---- */
-let bootHeadCleanup = null;
-function spinUpBootHead() {
-  const c = document.getElementById("boot-head-canvas");
+/* ---- 大型 3D 線框頭模（疊在剪影上、掃描時往右轉） ---- */
+let scanHeadCleanup = null;
+let setHeadProgress = () => {};
+function spinUpScanHead() {
+  const c = document.getElementById("entry-head");
   if (!c) return;
-  const W = c.clientWidth || 180;
-  const H = c.clientHeight || 220;
-  const dpr = Math.min(devicePixelRatio, 2);
+  const W = c.clientWidth || 460;
+  const H = c.clientHeight || 560;
   const r = new THREE.WebGLRenderer({ canvas: c, antialias: true, alpha: true });
-  r.setPixelRatio(dpr);
+  r.setPixelRatio(Math.min(devicePixelRatio, 2));
   r.setSize(W, H, false);
   const s = new THREE.Scene();
-  const cam = new THREE.PerspectiveCamera(38, W / H, 0.1, 30);
-  cam.position.set(0, 0.05, 4.2);
+  const cam = new THREE.PerspectiveCamera(34, W / H, 0.1, 30);
+  cam.position.set(0, 0.05, 4.6);
 
-  // 頭部：橢圓化的二十面體，稍微往臉部方向位移點以模擬鼻樑
-  const headGeo = new THREE.IcosahedronGeometry(1, 4);
+  // 頭部：橢圓化二十面體，額頭微寬、下顎收尖、鼻樑前凸
+  const headGeo = new THREE.IcosahedronGeometry(1, 5);
   {
     const pos = headGeo.attributes.position;
     const v = new THREE.Vector3();
     for (let i = 0; i < pos.count; i++) {
       v.fromBufferAttribute(pos, i);
-      // 拉長 Y、收窄 X、稍微壓扁 Z
-      v.y *= 1.32;
-      v.x *= 0.84;
-      v.z *= 0.96;
-      // 下顎收尖、額頭微寬
-      const t = v.y;
-      const taper = t < 0 ? 1 + t * 0.18 : 1 - t * 0.05;
-      v.x *= taper;
-      v.z *= taper;
-      // 鼻樑與額頭微凸（Z 軸方向，臉前面）
-      if (v.z > 0.4 && v.y > -0.3 && v.y < 0.4 && Math.abs(v.x) < 0.25) {
-        v.z += 0.06 * (1 - Math.abs(v.y) * 1.5);
+      v.y *= 1.34; v.x *= 0.82; v.z *= 0.98;
+      const taper = v.y < 0 ? 1 + v.y * 0.2 : 1 - v.y * 0.05;
+      v.x *= taper; v.z *= taper;
+      if (v.z > 0.4 && v.y > -0.35 && v.y < 0.45 && Math.abs(v.x) < 0.26) {
+        v.z += 0.08 * (1 - Math.abs(v.y) * 1.4);
       }
       pos.setXYZ(i, v.x, v.y, v.z);
     }
     headGeo.computeVertexNormals();
   }
-
-  // 雙層：實體（極暗）+ 線框（橘色，主視覺）
-  const headSolid = new THREE.Mesh(
-    headGeo,
-    new THREE.MeshBasicMaterial({ color: "#06060a", transparent: true, opacity: 0.5 })
-  );
-  const headWire = new THREE.Mesh(
-    headGeo,
-    new THREE.MeshBasicMaterial({ color: 0xff6b1a, wireframe: true, transparent: true, opacity: 0.95 })
-  );
+  const headSolid = new THREE.Mesh(headGeo, new THREE.MeshBasicMaterial({ color: "#0a0708", transparent: true, opacity: 0.55 }));
+  const headWire = new THREE.Mesh(headGeo, new THREE.MeshBasicMaterial({ color: 0xff6b1a, wireframe: true, transparent: true, opacity: 0.95 }));
   headWire.scale.setScalar(1.002);
-  s.add(headSolid, headWire);
+  const headGroup = new THREE.Group();
+  headGroup.add(headSolid, headWire);
+  s.add(headGroup);
 
-  // 採樣點：四個亮點漂浮在臉部前方
-  const pointGeo = new THREE.SphereGeometry(0.04, 12, 12);
-  const pointMat = new THREE.MeshBasicMaterial({ color: 0xff6b1a });
+  // 臉部特徵採樣點
+  const pointGeo = new THREE.SphereGeometry(0.035, 12, 12);
   const points = [];
-  [[-0.3, 0.25, 1.0], [0.3, 0.25, 1.0], [0, -0.05, 1.05], [0, -0.4, 0.95]].forEach((p, i) => {
-    const m = new THREE.Mesh(pointGeo, pointMat.clone());
+  [[-0.32, 0.28, 0.95], [0.32, 0.28, 0.95], [0, 0, 1.08], [0, -0.32, 1.0], [0, -0.62, 0.78]].forEach((p, i) => {
+    const m = new THREE.Mesh(pointGeo, new THREE.MeshBasicMaterial({ color: 0xff6b1a, transparent: true }));
     m.position.set(...p);
-    m.userData.off = i * 0.5;
-    s.add(m);
+    m.userData.off = i * 0.45;
+    headGroup.add(m); // 跟著頭一起轉
     points.push(m);
   });
 
-  let raf;
-  let alive = true;
+  let raf, alive = true, prog = 0;
+  setHeadProgress = (p) => { prog = p; };
   const clk = new THREE.Clock();
   function loop() {
     if (!alive) return;
     const t = clk.getElapsedTime();
-    // 緩慢左右搖頭，掃描中
-    headWire.rotation.y = Math.sin(t * 0.55) * 0.55;
-    headSolid.rotation.y = headWire.rotation.y;
-    headWire.rotation.x = Math.sin(t * 0.35) * 0.08;
-    headSolid.rotation.x = headWire.rotation.x;
-    // 採樣點脈動
-    points.forEach((m, i) => {
-      const k = 0.5 + 0.5 * Math.sin(t * 2.2 + m.userData.off);
-      m.scale.setScalar(0.6 + k * 0.7);
-      m.material.opacity = 0.3 + k * 0.7;
-      m.material.transparent = true;
+    // 掃描進度 → 頭部偏擺：從面向左前方轉到面向右前方（往右轉）
+    const yaw = THREE.MathUtils.lerp(-0.95, 0.95, smootherstep(prog));
+    headGroup.rotation.y = yaw + Math.sin(t * 1.1) * 0.06;
+    headGroup.rotation.x = Math.sin(t * 0.5) * 0.05;
+    points.forEach((m) => {
+      const k = 0.5 + 0.5 * Math.sin(t * 2.4 + m.userData.off);
+      m.scale.setScalar(0.6 + k * 0.8);
+      m.material.opacity = 0.35 + k * 0.65;
     });
     r.render(s, cam);
     raf = requestAnimationFrame(loop);
   }
   loop();
 
-  // 處理 boot canvas 尺寸（reticle 是 180x230 css，已用 90% 充滿）
   const ro = new ResizeObserver(() => {
-    const w = c.clientWidth || W;
-    const h = c.clientHeight || H;
+    const w = c.clientWidth || W, h = c.clientHeight || H;
     r.setSize(w, h, false);
     cam.aspect = w / h;
     cam.updateProjectionMatrix();
   });
   ro.observe(c);
 
-  bootHeadCleanup = () => {
+  scanHeadCleanup = () => {
     alive = false;
     cancelAnimationFrame(raf);
     ro.disconnect();
@@ -785,60 +756,58 @@ function spinUpBootHead() {
   };
 }
 
-function runBoot() {
-  // 啟動 3D 線框頭模
-  spinUpBootHead();
+// 掃描階段：狀態列推進 + 同步頭部往右轉，完成後 → 碎裂進場 + 自動開門
+function runScan() {
+  spinUpScanHead();
   const steps = [
-    [0,   "建立連線…",         () => "—— pts"],
-    [14,  "偵測臉部…",         (pct) => `${Math.floor(pct * 1.2)} pts`],
-    [34,  "比對會員資料…",     (pct) => `${Math.floor(pct * 1.8)} / 168 pts`],
-    [58,  "驗證身分…",         () => `MATCH · 99.${Math.floor(Math.random() * 8)}%`],
-    [82,  "授權核發中…",       () => "GRANTED"],
-    [100, "通過 · 開啟閘門",    () => "ACCESS GRANTED"],
+    [0,   "建立連線…",       () => "—— pts"],
+    [14,  "偵測臉部…",       (pct) => `${Math.floor(pct * 1.2)} pts`],
+    [34,  "建立 3D 臉模…",   (pct) => `${Math.floor(pct * 1.8)} / 168 pts`],
+    [58,  "比對會員資料…",   () => `MATCH · 99.${Math.floor(Math.random() * 8)}%`],
+    [82,  "授權核發中…",     () => "GRANTED"],
+    [100, "通過 · 開啟閘門",  () => "ACCESS GRANTED"],
   ];
   let pct = 0;
-  // 較慢的累進，總長 ~6 秒
   const iv = setInterval(() => {
-    pct = Math.min(100, pct + 0.45 + Math.random() * 0.85);
+    pct = Math.min(100, pct + 0.5 + Math.random() * 0.9);
     bootBar.style.width = pct + "%";
+    setHeadProgress(pct / 100);
     const step = steps.filter((s) => pct >= s[0]).pop();
-    if (step) {
-      bootStatus.textContent = step[1];
-      bootMetric.textContent = step[2](pct);
-    }
+    if (step) { bootStatus.textContent = step[1]; bootMetric.textContent = step[2](pct); }
     if (pct >= 100) {
       clearInterval(iv);
       bootStatus.classList.add("is-ok");
-      // 通過閃光
       bootPulse.classList.add("is-flash");
-      setTimeout(() => {
-        boot.classList.add("is-done");
-        document.getElementById("topbar").classList.add("is-visible");
-        lenis.start();
-        // 等淡出完成再 dispose 小 renderer
-        setTimeout(() => bootHeadCleanup?.(), 1100);
-      }, 900);
+      // 進場：剪影碎裂 + 整層淡出 → 啟動 3D 世界自動過場（開門飛入）
+      enterWorld();
     }
   }, 55);
 }
-// Stage 0：肖像入口 → 點擊「掃描臉孔」後，剪影旋轉轉正、淡出 → 進入線框臉部掃描
-const entry = document.getElementById("entry");
-const entryCta = document.getElementById("entry-cta");
-entryCta.addEventListener("click", () => {
-  if (entry.classList.contains("is-scanning")) return;
-  entry.classList.add("is-scanning");
-  // 觸發 SVG 碎裂濾鏡（feTurbulence + feDisplacementMap）
+
+function enterWorld() {
+  entry.classList.add("is-entering");
   try {
     document.getElementById("shatterFreq")?.beginElement();
     document.getElementById("shatterScale")?.beginElement();
   } catch (e) {
-    /* Safari 對 beginElement 行為不一致，失敗不致命 */
+    /* Safari beginElement 行為不一致，失敗不致命 */
   }
-  // 1.5 秒：剪影旋轉 + 碎裂 + 淡出
+  // 剪影碎裂 ~1.2s 後：淡出 entry、同時啟動 3D 世界自動過場（開門飛入）
   setTimeout(() => {
     entry.classList.add("is-done");
-    runBoot();
-  }, 1500);
+    document.getElementById("topbar").classList.add("is-visible");
+    introPlaying = true;
+    setTimeout(() => scanHeadCleanup?.(), 1100);
+  }, 1200);
+}
+
+entryCta.addEventListener("click", () => {
+  if (entry.classList.contains("is-scanning") || entry.classList.contains("is-entering")) return;
+  entry.classList.add("is-scanning");
+  // 更新 HUD：FACE → SCANNING
+  const faceHud = [...document.querySelectorAll(".entry__hud--right li span")][1];
+  if (faceHud) faceHud.textContent = "SCANNING…";
+  runScan();
 });
 
 /* ---------------------------------------------------------------------- */
