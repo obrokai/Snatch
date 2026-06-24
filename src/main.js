@@ -133,15 +133,127 @@ function makeForm(geo, opts) {
   return g;
 }
 
-// 沿飛行走廊（-Z）佈置構造物，大小錯落 → 強景深
-makeForm(deform(new THREE.IcosahedronGeometry(3, 6), 0.18), { pos: [-5, 1.5, -10], scale: 1.2, spin: [0.05, 0.08, 0.03] });
-makeForm(new THREE.TorusKnotGeometry(2.4, 0.62, 180, 20), { pos: [6, 2, -22], scale: 1, spin: [0.04, 0.1, 0.02] });
-makeForm(new THREE.TorusGeometry(3.2, 1.0, 20, 80), { pos: [-3, -1, -34], scale: 1.1, spin: [0.12, 0.04, 0.02] });
-makeForm(deform(new THREE.IcosahedronGeometry(4, 7), 0.22), { pos: [7, -2, -48], scale: 1, wire: "#ffffff", spin: [0.03, 0.05, 0.04] });
-makeForm(new THREE.TorusKnotGeometry(2.0, 0.7, 200, 18, 2, 3), { pos: [-6, 2.5, -60], scale: 1.1, spin: [0.06, 0.07, 0.05] });
-makeForm(deform(new THREE.IcosahedronGeometry(3.4, 6), 0.2), { pos: [4, 1.5, -74], scale: 1.1, orange: true, spin: [0.04, 0.06, 0.03] });
-makeForm(new THREE.TorusGeometry(3.6, 0.9, 18, 90), { pos: [-4, -1.5, -88], scale: 1, spin: [0.1, 0.03, 0.05] });
-makeForm(deform(new THREE.IcosahedronGeometry(5, 7), 0.16), { pos: [6, 2, -104], scale: 1, wireOpacity: 0.4, spin: [0.02, 0.04, 0.02] });
+/* ---- 裝置構造物（手機 / 平板 / 筆電）：同風格線框，承載「跨裝置」意象 ---- */
+function wfGroup(geo, { orange = true, wireOpacity = 0.55 } = {}) {
+  const g = new THREE.Group();
+  const solid = new THREE.Mesh(
+    geo,
+    new THREE.MeshStandardMaterial({
+      color: orange ? ACCENT : "#100e16",
+      emissive: orange ? ACCENT_DEEP : "#000000",
+      emissiveIntensity: orange ? 0.32 : 0,
+      roughness: 0.5, metalness: 0.2, transparent: true, opacity: orange ? 0.9 : 0.55,
+    })
+  );
+  const wire = new THREE.Mesh(
+    geo,
+    new THREE.MeshBasicMaterial({ color: "#ffffff", wireframe: true, transparent: true, opacity: wireOpacity })
+  );
+  wire.scale.setScalar(1.005);
+  g.add(solid, wire);
+  return g;
+}
+function screenGlow(w, h, z) {
+  const m = new THREE.Mesh(
+    new THREE.PlaneGeometry(w, h),
+    new THREE.MeshBasicMaterial({ color: ACCENT, transparent: true, opacity: 0.22 })
+  );
+  m.position.set(0, 0, z);
+  return m;
+}
+function makePhone() {
+  const g = wfGroup(new THREE.BoxGeometry(1.0, 2.0, 0.12, 3, 6, 1));
+  g.add(screenGlow(0.82, 1.7, 0.07));
+  return g;
+}
+function makeTablet() {
+  const g = wfGroup(new THREE.BoxGeometry(2.4, 3.2, 0.16, 4, 6, 1));
+  g.add(screenGlow(2.0, 2.7, 0.09));
+  return g;
+}
+function makeLaptop() {
+  const g = new THREE.Group();
+  const base = wfGroup(new THREE.BoxGeometry(3.2, 0.14, 2.2, 6, 1, 4));
+  const screen = wfGroup(new THREE.BoxGeometry(3.2, 2.0, 0.12, 6, 5, 1));
+  screen.position.set(0, 1.02, -1.04);
+  screen.rotation.x = -0.34;
+  const glow = screenGlow(2.8, 1.7, 0.07);
+  glow.position.set(0, 1.05, -0.97);
+  glow.rotation.x = -0.34;
+  g.add(base, screen, glow);
+  return g;
+}
+function placeDevice(group, pos, scale, spinY = 0.04) {
+  group.position.set(...pos);
+  group.scale.setScalar(scale);
+  group.rotation.y = pos[0] > 0 ? -0.5 : 0.5;
+  group.userData.spin = [0, spinY, 0];
+  group.userData.float = { amp: 0.45, off: Math.random() * 6, baseY: pos[1] };
+  scene.add(group);
+  forms.push(group);
+  return group;
+}
+
+/* ---- 臉部辨識頭像（閘門上方，掃描中） ---- */
+const scanHeadGroup = new THREE.Group();
+scanHeadGroup.position.set(0, 6.8, 0);
+// 線框頭部
+const scanHead = new THREE.Mesh(
+  deform(new THREE.IcosahedronGeometry(0.85, 4), 0.05),
+  new THREE.MeshBasicMaterial({ color: "#ffffff", wireframe: true, transparent: true, opacity: 0.55 })
+);
+scanHeadGroup.add(scanHead);
+// 四角辨識框
+function reticleCorner(x, y) {
+  const g = new THREE.Group();
+  const lineMat = new THREE.LineBasicMaterial({ color: ACCENT, transparent: true, opacity: 0.95 });
+  const armA = new THREE.Line(new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(0, 0, 0), new THREE.Vector3(0.35 * x, 0, 0)
+  ]), lineMat);
+  const armB = new THREE.Line(new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0.35 * y, 0)
+  ]), lineMat);
+  g.add(armA, armB);
+  g.position.set(x * 1.15, y * 1.15, 0);
+  return g;
+}
+scanHeadGroup.add(reticleCorner(-1, 1), reticleCorner(1, 1), reticleCorner(-1, -1), reticleCorner(1, -1));
+// 掃描橫線（在頭部上下掃）
+const scanBeam = new THREE.Mesh(
+  new THREE.PlaneGeometry(2.6, 0.04),
+  new THREE.MeshBasicMaterial({ color: ACCENT, transparent: true, opacity: 0.9 })
+);
+scanBeam.position.set(0, 0, 0.01);
+scanHeadGroup.add(scanBeam);
+scene.add(scanHeadGroup);
+
+/* ---- 入口閘門（掃描臉部 → 進場）：camera 開場即穿過 ---- */
+const gate = new THREE.Group();
+gate.position.set(0, 0, 2.6);
+const jambGeo = new THREE.BoxGeometry(0.5, 5.2, 0.5, 1, 8, 1);
+const jambL = wfGroup(jambGeo, { wireOpacity: 0.45 }); jambL.position.set(-2.6, 2.4, 0);
+const jambR = wfGroup(jambGeo, { wireOpacity: 0.45 }); jambR.position.set(2.6, 2.4, 0);
+const lintel = wfGroup(new THREE.BoxGeometry(5.7, 0.5, 0.5, 8, 1, 1)); lintel.position.set(0, 5.0, 0);
+const panelGeo = new THREE.BoxGeometry(1.7, 4.4, 0.12, 4, 9, 1);
+const panelL = wfGroup(panelGeo, { wireOpacity: 0.5 }); panelL.position.set(-0.95, 2.4, 0);
+const panelR = wfGroup(panelGeo, { wireOpacity: 0.5 }); panelR.position.set(0.95, 2.4, 0);
+const gateScan = new THREE.Mesh(
+  new THREE.PlaneGeometry(3.4, 0.07),
+  new THREE.MeshBasicMaterial({ color: ACCENT, transparent: true, opacity: 0.9 })
+);
+gateScan.position.set(0, 2.4, 0.25);
+gate.add(jambL, jambR, lintel, panelL, panelR, gateScan);
+scene.add(gate);
+
+/* ---- 沿走廊佈置：閘門 → 裝置 + 少量抽象體（補景深氣氛） ---- */
+makeForm(deform(new THREE.IcosahedronGeometry(3, 6), 0.18), { pos: [-6, 2, -12], scale: 1.1, spin: [0.04, 0.06, 0.03] });
+placeDevice(makeTablet(), [5.6, 1.6, -30], 1.0);                    // 系統全覽附近
+makeForm(new THREE.TorusKnotGeometry(2.2, 0.6, 180, 18), { pos: [-5.5, -1, -42], scale: 0.9, spin: [0.04, 0.08, 0.03] });
+placeDevice(makePhone(), [4.8, 0.6, -52], 1.7);                     // LINE 一站式附近
+placeDevice(makeLaptop(), [-5, 1, -66], 1.05);                     // AI 後台附近
+makeForm(deform(new THREE.IcosahedronGeometry(4, 7), 0.2), { pos: [6.5, 2, -82], scale: 1, spin: [0.03, 0.05, 0.03] });
+placeDevice(makeTablet(), [-4.4, 1.2, -98], 1.15);                 // FAQ 附近
+makeForm(new THREE.TorusGeometry(3.4, 0.9, 18, 80), { pos: [5, -1, -110], scale: 1, spin: [0.1, 0.03, 0.04] });
 
 // 細小漂浮碎塊（近景，增加臨場感）
 const shardGeo = new THREE.OctahedronGeometry(0.35, 0);
@@ -178,8 +290,10 @@ scene.add(dust);
 /* 鏡頭路徑：向前飛行、輕微擺盪，穿過構造物                                 */
 /* ---------------------------------------------------------------------- */
 const waypoints = [
-  { p: 0.0, pos: [0, 0.6, 8], look: [0, 0.4, -2] },
-  { p: 0.11, pos: [1.6, 1, -3], look: [-1, 0.5, -14] },
+  { p: 0.0, pos: [0, 1.6, 16], look: [0, 2.6, 2.6] },     // 站在閘門前，看著掃描頭
+  { p: 0.04, pos: [0, 1.5, 10], look: [0, 2.0, 2.6] },    // 逼近，閘門開始開
+  { p: 0.09, pos: [0, 1.5, 2], look: [0, 1.2, -6] },      // 穿過閘門
+  { p: 0.13, pos: [1.6, 1, -3], look: [-1, 0.5, -14] },
   { p: 0.22, pos: [-2.2, 0.2, -16], look: [1, 0.6, -28] },
   { p: 0.33, pos: [1.4, 1.2, -30], look: [-1.2, 0.4, -42] },
   { p: 0.44, pos: [-1.6, -0.4, -44], look: [1.2, 0.4, -56] },
@@ -286,6 +400,11 @@ let activePhone = -1;
 function applyProgress(p) {
   sampleCamera(p);
 
+  // 入口閘門：開場即向兩側滑開，camera 穿過進場
+  const enter = smootherstep(THREE.MathUtils.clamp(p / 0.06, 0, 1));
+  panelL.position.x = -0.95 - enter * 2.4;
+  panelR.position.x = 0.95 + enter * 2.4;
+
   // 色彩過境：靠近構造物群（中段、收束）讓世界更橘、更暖；空檔回到暗
   const warm = 0.5 - 0.5 * Math.cos(p * Math.PI * 2 * 1.5);
   scene.background.copy(BG_DARK).lerp(BG_WARM, warm * 0.7);
@@ -377,6 +496,19 @@ function tick(time) {
     s.position.y += Math.sin(t * 0.6 + i) * 0.002;
   });
   dust.rotation.y = t * 0.01;
+
+  // 閘門掃描光束：上下掃描、進場後淡出
+  const entered = THREE.MathUtils.clamp(renderProgress / 0.09, 0, 1);
+  gateScan.position.y = 2.4 + Math.sin(t * 1.6) * 2.0;
+  gateScan.material.opacity = (1 - entered) * (0.5 + 0.4 * Math.abs(Math.sin(t * 1.6)));
+
+  // 頭像掃描：beam 上下掃描、頭部緩慢轉動、進場後整組淡出
+  scanBeam.position.y = Math.sin(t * 2) * 0.9;
+  scanBeam.material.opacity = (1 - entered) * 0.9;
+  scanHead.rotation.y = t * 0.4;
+  scanHeadGroup.children.forEach((c) => {
+    if (c.material) c.material.opacity = (1 - entered) * (c === scanHead ? 0.55 : 0.95);
+  });
 
   camera.position.copy(_pos);
   camera.position.x += Math.sin(t * 0.35) * 0.12;
