@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import Lenis from "lenis";
 import "./style.css";
 
@@ -153,44 +154,160 @@ function wfGroup(geo, { orange = true, wireOpacity = 0.55 } = {}) {
   g.add(solid, wire);
   return g;
 }
-function screenGlow(w, h, z) {
+// 螢幕發光面（會脈動）— 收集起來統一在 tick 動畫
+const screenGlows = [];
+function screenGlow(w, h) {
   const m = new THREE.Mesh(
     new THREE.PlaneGeometry(w, h),
-    new THREE.MeshBasicMaterial({ color: ACCENT, transparent: true, opacity: 0.22 })
+    new THREE.MeshBasicMaterial({ color: ACCENT, transparent: true, opacity: 0.32, blending: THREE.AdditiveBlending })
   );
-  m.position.set(0, 0, z);
+  m.userData.glow = true;
+  screenGlows.push(m);
   return m;
 }
+function smallCircle(r, color = "#0a0807", op = 0.95) {
+  return new THREE.Mesh(
+    new THREE.CircleGeometry(r, 24),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: op })
+  );
+}
+function smallRing(rInner, rOuter, color = "#ffffff", op = 0.6) {
+  return new THREE.Mesh(
+    new THREE.RingGeometry(rInner, rOuter, 24),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: op, side: THREE.DoubleSide })
+  );
+}
+function darkPlate(w, h, color = "#08070b", op = 0.88) {
+  return new THREE.Mesh(
+    new THREE.PlaneGeometry(w, h),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: op })
+  );
+}
+
+/* ---- 手機（圓角機身 + 瀏海相機 + 聽筒 + Home 鍵） ---- */
 function makePhone() {
-  const g = wfGroup(new THREE.BoxGeometry(1.0, 2.0, 0.12, 3, 6, 1));
-  g.add(screenGlow(0.82, 1.7, 0.07));
+  const g = new THREE.Group();
+  const body = wfGroup(new RoundedBoxGeometry(1.1, 2.2, 0.14, 4, 0.14));
+  g.add(body);
+  // 螢幕暗色面（讓螢幕區看起來像玻璃下的內容）
+  const screen = darkPlate(0.92, 1.78);
+  screen.position.z = 0.073;
+  g.add(screen);
+  // 螢幕發光
+  const glow = screenGlow(0.92, 1.78);
+  glow.position.z = 0.078;
+  g.add(glow);
+  // 上方瀏海：聽筒長條 + 鏡頭點
+  const ear = darkPlate(0.32, 0.04, "#000000", 0.95);
+  ear.position.set(-0.08, 0.96, 0.082);
+  const cam = smallCircle(0.04, "#000000");
+  cam.position.set(0.18, 0.96, 0.082);
+  const camRing = smallRing(0.045, 0.058, ACCENT.getStyle(), 0.85);
+  camRing.position.set(0.18, 0.96, 0.085);
+  g.add(ear, cam, camRing);
+  // 下方 Home / 指示條
+  const home = darkPlate(0.34, 0.04, "#1a1a1a", 0.85);
+  home.position.set(0, -0.96, 0.082);
+  g.add(home);
   return g;
 }
+
+/* ---- 平板（圓角 + 中央鏡頭 + 下方圓形 Home） ---- */
 function makeTablet() {
-  const g = wfGroup(new THREE.BoxGeometry(2.4, 3.2, 0.16, 4, 6, 1));
-  g.add(screenGlow(2.0, 2.7, 0.09));
+  const g = new THREE.Group();
+  const body = wfGroup(new RoundedBoxGeometry(2.6, 3.4, 0.18, 4, 0.16));
+  g.add(body);
+  const screen = darkPlate(2.2, 2.9);
+  screen.position.z = 0.095;
+  g.add(screen);
+  const glow = screenGlow(2.2, 2.9);
+  glow.position.z = 0.1;
+  g.add(glow);
+  // 頂部中央鏡頭
+  const cam = smallCircle(0.055, "#000000");
+  cam.position.set(0, 1.55, 0.105);
+  const camRing = smallRing(0.06, 0.08, ACCENT.getStyle(), 0.85);
+  camRing.position.set(0, 1.55, 0.108);
+  g.add(cam, camRing);
+  // 底部 Home 圓鍵
+  const home = smallRing(0.1, 0.13, "#ffffff", 0.4);
+  home.position.set(0, -1.55, 0.105);
+  g.add(home);
   return g;
 }
+
+/* ---- 筆電（圓角底座 + 鍵盤 + 觸控板 + 鉸鏈 + 螢幕鏡頭） ---- */
 function makeLaptop() {
   const g = new THREE.Group();
-  const base = wfGroup(new THREE.BoxGeometry(3.2, 0.14, 2.2, 6, 1, 4));
-  const screen = wfGroup(new THREE.BoxGeometry(3.2, 2.0, 0.12, 6, 5, 1));
-  screen.position.set(0, 1.02, -1.04);
-  screen.rotation.x = -0.34;
-  const glow = screenGlow(2.8, 1.7, 0.07);
-  glow.position.set(0, 1.05, -0.97);
-  glow.rotation.x = -0.34;
-  g.add(base, screen, glow);
+  // 底座
+  const base = wfGroup(new RoundedBoxGeometry(3.4, 0.16, 2.3, 4, 0.05));
+  base.position.y = 0;
+  g.add(base);
+  // 鍵盤面（暗色面）
+  const keyboard = darkPlate(2.9, 1.4);
+  keyboard.rotation.x = -Math.PI / 2;
+  keyboard.position.set(0, 0.082, -0.1);
+  g.add(keyboard);
+  // 鍵盤格線（白色細線）
+  const keysGeo = new THREE.PlaneGeometry(2.9, 1.4, 14, 5);
+  const keysMat = new THREE.MeshBasicMaterial({ color: "#ffffff", wireframe: true, transparent: true, opacity: 0.18 });
+  const keys = new THREE.Mesh(keysGeo, keysMat);
+  keys.rotation.x = -Math.PI / 2;
+  keys.position.set(0, 0.085, -0.1);
+  g.add(keys);
+  // 觸控板
+  const trackpad = darkPlate(1.0, 0.7, "#0c0a08", 0.9);
+  trackpad.rotation.x = -Math.PI / 2;
+  trackpad.position.set(0, 0.086, 0.78);
+  g.add(trackpad);
+  // 鉸鏈
+  const hinge = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.06, 0.06, 3.2, 14),
+    new THREE.MeshStandardMaterial({ color: "#22201d", roughness: 0.4, metalness: 0.8 })
+  );
+  hinge.rotation.z = Math.PI / 2;
+  hinge.position.set(0, 0.18, -1.05);
+  g.add(hinge);
+  // 螢幕（向後仰，貼著鉸鏈）
+  const screenAssy = new THREE.Group();
+  const screenBody = wfGroup(new RoundedBoxGeometry(3.4, 2.1, 0.12, 4, 0.06));
+  screenAssy.add(screenBody);
+  const screenFace = darkPlate(2.9, 1.6);
+  screenFace.position.z = 0.065;
+  screenAssy.add(screenFace);
+  const screenGlowM = screenGlow(2.9, 1.6);
+  screenGlowM.position.z = 0.07;
+  screenAssy.add(screenGlowM);
+  // 螢幕上緣鏡頭
+  const cam = smallCircle(0.03, "#000000");
+  cam.position.set(0, 0.92, 0.07);
+  const camRing = smallRing(0.035, 0.045, ACCENT.getStyle(), 0.85);
+  camRing.position.set(0, 0.92, 0.073);
+  screenAssy.add(cam, camRing);
+  // 仰角
+  screenAssy.position.set(0, 1.13, -1.04);
+  screenAssy.rotation.x = -0.32;
+  g.add(screenAssy);
   return g;
 }
-function placeDevice(group, pos, scale, spinY = 0.04) {
+// 裝置註冊：捲動進度接近 station 時飛入並停留，遠離後飛出
+const devices = [];
+function placeDevice(group, pos, scale, spinY = 0.04, stationP = 0.5) {
   group.position.set(...pos);
-  group.scale.setScalar(scale);
+  group.scale.setScalar(0); // 預設縮小，待飛入動畫顯示
   group.rotation.y = pos[0] > 0 ? -0.5 : 0.5;
   group.userData.spin = [0, spinY, 0];
   group.userData.float = { amp: 0.45, off: Math.random() * 6, baseY: pos[1] };
+  group.userData.device = {
+    baseX: pos[0],
+    baseY: pos[1],
+    baseZ: pos[2],
+    scaleTarget: scale,
+    stationP,
+    fromDir: pos[0] >= 0 ? 1 : -1, // 從遠處側方飛入
+  };
   scene.add(group);
-  forms.push(group);
+  devices.push(group);
   return group;
 }
 
@@ -247,12 +364,12 @@ scene.add(gate);
 
 /* ---- 沿走廊佈置：閘門 → 裝置 + 少量抽象體（補景深氣氛） ---- */
 makeForm(deform(new THREE.IcosahedronGeometry(3, 6), 0.18), { pos: [-6, 2, -12], scale: 1.1, spin: [0.04, 0.06, 0.03] });
-placeDevice(makeTablet(), [5.6, 1.6, -30], 1.0);                    // 系統全覽附近
+placeDevice(makeTablet(), [5.6, 1.6, -30], 1.0, 0.04, 3 / 10);      // 系統全覽 station 3
 makeForm(new THREE.TorusKnotGeometry(2.2, 0.6, 180, 18), { pos: [-5.5, -1, -42], scale: 0.9, spin: [0.04, 0.08, 0.03] });
-placeDevice(makePhone(), [4.8, 0.6, -52], 1.7);                     // LINE 一站式附近
-placeDevice(makeLaptop(), [-5, 1, -66], 1.05);                     // AI 後台附近
+placeDevice(makePhone(), [4.8, 0.6, -52], 1.7, 0.06, 4 / 10);       // LINE 一站式 station 4
+placeDevice(makeLaptop(), [-5, 1, -66], 1.05, 0.03, 5 / 10);        // AI 後台 station 5
 makeForm(deform(new THREE.IcosahedronGeometry(4, 7), 0.2), { pos: [6.5, 2, -82], scale: 1, spin: [0.03, 0.05, 0.03] });
-placeDevice(makeTablet(), [-4.4, 1.2, -98], 1.15);                 // FAQ 附近
+placeDevice(makeTablet(), [-4.4, 1.2, -98], 1.15, 0.04, 8 / 10);    // FAQ station 8
 makeForm(new THREE.TorusGeometry(3.4, 0.9, 18, 80), { pos: [5, -1, -110], scale: 1, spin: [0.1, 0.03, 0.04] });
 
 // 細小漂浮碎塊（近景，增加臨場感）
@@ -497,6 +614,33 @@ function tick(time) {
   });
   dust.rotation.y = t * 0.01;
 
+  // 裝置：按 station 進度飛入、停留、飛出
+  devices.forEach((g) => {
+    const d = g.userData.device;
+    // 與站台中心的距離，前 0.06 之內飛入、之後 0.08 飛出
+    const delta = renderProgress - d.stationP;
+    let visibility;
+    if (delta < -0.06) visibility = 0;
+    else if (delta < 0) visibility = smootherstep((delta + 0.06) / 0.06);
+    else if (delta < 0.08) visibility = 1;
+    else if (delta < 0.14) visibility = 1 - smootherstep((delta - 0.08) / 0.06);
+    else visibility = 0;
+    // 縮放與位置偏移：未顯示時隱形，飛入過程從遠處彈跳出來
+    const offset = 1 - visibility;
+    g.scale.setScalar(d.scaleTarget * visibility);
+    g.visible = visibility > 0.001;
+    g.position.x = d.baseX + d.fromDir * offset * 7;
+    g.position.y = d.baseY + Math.sin(t * 0.5 + g.userData.float.off) * g.userData.float.amp + offset * 4;
+    g.position.z = d.baseZ + offset * 12;
+    // 旋轉
+    g.rotation.y += g.userData.spin[1] * 0.01;
+    g.rotation.x += g.userData.spin[0] * 0.005;
+  });
+
+  // 螢幕脈動發光
+  const pulse = 0.5 + 0.5 * Math.sin(t * 1.5);
+  screenGlows.forEach((m) => { m.material.opacity = 0.22 + pulse * 0.22; });
+
   // 閘門掃描光束：上下掃描、進場後淡出
   const entered = THREE.MathUtils.clamp(renderProgress / 0.09, 0, 1);
   gateScan.position.y = 2.4 + Math.sin(t * 1.6) * 2.0;
@@ -528,30 +672,40 @@ requestAnimationFrame(tick);
 const boot = document.getElementById("boot");
 const bootBar = document.getElementById("boot-bar");
 const bootStatus = document.getElementById("boot-status");
+const bootMetric = document.getElementById("boot-metric");
+const bootPulse = document.getElementById("boot-pulse");
 
 function runBoot() {
   const steps = [
-    [0, "建立連線…"],
-    [38, "載入模組…"],
-    [74, "同步資料…"],
-    [100, "SNATCH OS"],
+    [0,   "建立連線…",         () => "—— pts"],
+    [14,  "偵測臉部…",         (pct) => `${Math.floor(pct * 1.2)} pts`],
+    [34,  "比對會員資料…",     (pct) => `${Math.floor(pct * 1.8)} / 168 pts`],
+    [58,  "驗證身分…",         () => `MATCH · 99.${Math.floor(Math.random() * 8)}%`],
+    [82,  "授權核發中…",       () => "GRANTED"],
+    [100, "通過 · 開啟閘門",    () => "ACCESS GRANTED"],
   ];
   let pct = 0;
+  // 較慢的累進，總長 ~6 秒
   const iv = setInterval(() => {
-    pct = Math.min(100, pct + 2 + Math.random() * 3);
+    pct = Math.min(100, pct + 0.45 + Math.random() * 0.85);
     bootBar.style.width = pct + "%";
     const step = steps.filter((s) => pct >= s[0]).pop();
-    if (step) bootStatus.textContent = step[1];
+    if (step) {
+      bootStatus.textContent = step[1];
+      bootMetric.textContent = step[2](pct);
+    }
     if (pct >= 100) {
       clearInterval(iv);
       bootStatus.classList.add("is-ok");
+      // 通過閃光
+      bootPulse.classList.add("is-flash");
       setTimeout(() => {
         boot.classList.add("is-done");
         document.getElementById("topbar").classList.add("is-visible");
         lenis.start();
-      }, 650);
+      }, 900);
     }
-  }, 70);
+  }, 55);
 }
 if (document.fonts && document.fonts.ready) {
   document.fonts.ready.then(() => setTimeout(runBoot, 400));

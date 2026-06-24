@@ -255,15 +255,59 @@ body {
   font-weight: 500;
   color: var(--ink-soft);
   margin-left: 0.5em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
 }
 .boot__brand span {
   color: var(--accent);
 }
+.boot__brand i {
+  font-style: normal;
+  font-size: 0.58rem;
+  letter-spacing: 0.34em;
+  color: var(--ink-faint);
+  opacity: 0.7;
+}
 .boot__scan {
   position: relative;
-  width: 160px;
-  height: 200px;
+  width: 180px;
+  height: 230px;
 }
+.boot__face {
+  position: absolute;
+  inset: 14% 18%;
+  width: 64%;
+  height: 72%;
+  color: var(--accent);
+  opacity: 0.85;
+  filter: drop-shadow(0 0 6px rgba(255, 107, 26, 0.45));
+  animation: faceBreathe 4s ease-in-out infinite;
+}
+@keyframes faceBreathe {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 0.95; transform: scale(1.02); }
+}
+.boot__dot {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  animation: dotPing 1.8s ease-in-out infinite;
+}
+.boot__dot--a { top: 36%; left: 32%; animation-delay: 0s; }
+.boot__dot--b { top: 36%; right: 32%; animation-delay: 0.35s; }
+.boot__dot--c { top: 60%; left: 50%; transform: translateX(-50%); animation-delay: 0.7s; }
+.boot__dot--d { top: 74%; left: 50%; transform: translateX(-50%); animation-delay: 1.05s; }
+@keyframes dotPing {
+  0%, 100% { opacity: 0; transform: translateX(var(--tx, 0)) scale(0.6); }
+  40% { opacity: 1; transform: translateX(var(--tx, 0)) scale(1.4); }
+  80% { opacity: 0.2; transform: translateX(var(--tx, 0)) scale(0.8); }
+}
+.boot__dot--c, .boot__dot--d { --tx: -50%; }
 .boot__reticle {
   position: absolute;
   inset: 0;
@@ -293,18 +337,46 @@ body {
   0%, 100% { top: 8%; opacity: 0.3; }
   50% { top: 88%; opacity: 1; }
 }
+.boot__readout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+  min-height: 1.2em;
+}
 .boot__status {
   font-family: var(--mono);
   font-size: 0.85rem;
   letter-spacing: 0.28em;
   color: var(--ink-faint);
-  min-height: 1.2em;
 }
 .boot__status.is-ok {
   color: var(--accent);
 }
+.boot__metric {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  color: rgba(255, 107, 26, 0.55);
+  font-variant-numeric: tabular-nums;
+}
+.boot__pulse {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(60% 60% at 50% 50%, rgba(255, 107, 26, 0.55), transparent 70%);
+  opacity: 0;
+}
+.boot__pulse.is-flash {
+  animation: bootFlash 0.65s ease-out forwards;
+}
+@keyframes bootFlash {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  100% { opacity: 0; }
+}
 .boot__bar {
-  width: 220px;
+  width: 240px;
   height: 1px;
   background: var(--line);
   overflow: hidden;
