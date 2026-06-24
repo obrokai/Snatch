@@ -707,11 +707,19 @@ function runBoot() {
     }
   }, 55);
 }
-if (document.fonts && document.fonts.ready) {
-  document.fonts.ready.then(() => setTimeout(runBoot, 400));
-} else {
-  setTimeout(runBoot, 600);
-}
+// Stage 0：肖像入口 → 點擊「掃描臉孔」後，剪影旋轉轉正、淡出 → 進入線框臉部掃描
+const entry = document.getElementById("entry");
+const entryCta = document.getElementById("entry-cta");
+entryCta.addEventListener("click", () => {
+  if (entry.classList.contains("is-scanning")) return;
+  entry.classList.add("is-scanning");
+  // 1.5 秒：剪影旋轉到正面、放大、淡出
+  setTimeout(() => {
+    entry.classList.add("is-done");
+    // 接力：啟動既有的線框臉部掃描 boot 序幕
+    runBoot();
+  }, 1500);
+});
 
 /* ---------------------------------------------------------------------- */
 /* Resize                                                                 */

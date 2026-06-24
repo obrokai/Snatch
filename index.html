@@ -26,6 +26,64 @@
     <div class="grain" aria-hidden="true"></div>
     <div class="vignette" aria-hidden="true"></div>
 
+    <!-- 進站 · Stage 0：剪影肖像 + 科技流動效果 + 掃描鈕 -->
+    <div id="entry" class="entry">
+      <div class="entry__bg">
+        <div class="entry__grid"></div>
+        <div class="entry__vignette"></div>
+      </div>
+
+      <div class="entry__brand">SNATCH<span>OS</span><i>v1.0 · BIOMETRIC ACCESS</i></div>
+
+      <!-- 左右流動的數據條 -->
+      <ul class="entry__hud entry__hud--left">
+        <li><b>SYS</b><span>READY</span></li>
+        <li><b>NET</b><span>SECURE · 192.168.0.1</span></li>
+        <li><b>ENC</b><span>AES-256 · TLS 1.3</span></li>
+        <li><b>GEO</b><span>TW · TAIPEI</span></li>
+      </ul>
+      <ul class="entry__hud entry__hud--right">
+        <li><b>CAM</b><span>1080p · 60fps</span></li>
+        <li><b>FACE</b><span>STANDBY</span></li>
+        <li><b>LATENCY</b><span>14 ms</span></li>
+        <li><b>UPTIME</b><span>99.99%</span></li>
+      </ul>
+
+      <!-- 中央：人物剪影 + 流動圓環 -->
+      <div class="entry__stage" id="entry-stage">
+        <div class="entry__rings">
+          <i class="entry__ring entry__ring--a"></i>
+          <i class="entry__ring entry__ring--b"></i>
+          <i class="entry__ring entry__ring--c"></i>
+          <i class="entry__ring entry__ring--d"></i>
+        </div>
+        <img class="entry__photo" id="entry-photo" src="/entry-portrait.png" alt="" />
+        <!-- 四角辨識框 -->
+        <span class="entry__corner entry__corner--tl"></span>
+        <span class="entry__corner entry__corner--tr"></span>
+        <span class="entry__corner entry__corner--bl"></span>
+        <span class="entry__corner entry__corner--br"></span>
+        <!-- 水平掃描線 -->
+        <div class="entry__scanline"></div>
+        <!-- 採樣點 -->
+        <i class="entry__point entry__point--p1"></i>
+        <i class="entry__point entry__point--p2"></i>
+        <i class="entry__point entry__point--p3"></i>
+        <i class="entry__point entry__point--p4"></i>
+      </div>
+
+      <!-- 副標 + CTA -->
+      <div class="entry__foot">
+        <p class="entry__lead">啟動你的場館。<br /><span>請點擊以開始臉部辨識，進入 Snatch OS。</span></p>
+        <button class="entry__cta" id="entry-cta">
+          <span class="entry__cta-dot"></span>
+          <span class="entry__cta-label">掃描臉孔 · 開始體驗</span>
+          <span class="entry__cta-arrow">↗</span>
+        </button>
+        <p class="entry__legal">點擊代表你同意系統收集模擬辨識資料（僅用於展示）。</p>
+      </div>
+    </div>
+
     <!-- 進站載入 / 人臉掃描序幕 -->
     <div id="boot" class="boot">
       <div class="boot__inner">
