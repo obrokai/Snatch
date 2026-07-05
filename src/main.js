@@ -84,55 +84,6 @@ scene.add(floor);
 /* 構造物：實體單色面 + 白色線框 疊層（招牌外觀）                           */
 /* ---------------------------------------------------------------------- */
 const forms = [];
-function deform(geo, amp) {
-  const p = geo.attributes.position;
-  const v = new THREE.Vector3();
-  for (let i = 0; i < p.count; i++) {
-    v.fromBufferAttribute(p, i);
-    const n = Math.sin(v.x * 1.4 + v.y) * Math.cos(v.y * 1.3 + v.z) * Math.sin(v.z * 1.1 + v.x);
-    const s = 1 + n * amp;
-    p.setXYZ(i, v.x * s, v.y * s, v.z * s);
-  }
-  geo.computeVertexNormals();
-  return geo;
-}
-
-function makeForm(geo, opts) {
-  const g = new THREE.Group();
-  const orange = opts.orange !== false;
-  const solid = new THREE.Mesh(
-    geo,
-    new THREE.MeshStandardMaterial({
-      color: orange ? ACCENT : "#11101a",
-      emissive: orange ? ACCENT_DEEP : "#000000",
-      emissiveIntensity: orange ? 0.35 : 0,
-      roughness: 0.5,
-      metalness: 0.2,
-      transparent: true,
-      opacity: orange ? 0.92 : 0.6,
-      flatShading: false,
-    })
-  );
-  const wire = new THREE.Mesh(
-    geo,
-    new THREE.MeshBasicMaterial({
-      color: opts.wire || "#ffffff",
-      wireframe: true,
-      transparent: true,
-      opacity: opts.wireOpacity ?? 0.5,
-    })
-  );
-  wire.scale.setScalar(1.004);
-  g.add(solid, wire);
-  g.position.set(...opts.pos);
-  g.scale.setScalar(opts.scale || 1);
-  g.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
-  g.userData.spin = opts.spin || [0.02, 0.03, 0.01];
-  g.userData.float = { amp: opts.floatAmp ?? 0.6, off: Math.random() * 6, baseY: opts.pos[1] };
-  scene.add(g);
-  forms.push(g);
-  return g;
-}
 
 /* ---- 裝置構造物（手機 / 平板 / 筆電）：同風格線框，承載「跨裝置」意象 ---- */
 function wfGroup(geo, { orange = true, wireOpacity = 0.55 } = {}) {
@@ -197,6 +148,8 @@ function makePhone() {
   const glow = screenGlow(0.92, 1.78);
   glow.position.z = 0.078;
   g.add(glow);
+  // 供 HTML UI 精準對位：記住螢幕面與尺寸
+  g.userData.screen = { mesh: glow, w: 0.92, h: 1.78 };
   // 上方瀏海：聽筒長條 + 鏡頭點
   const ear = darkPlate(0.32, 0.04, "#000000", 0.95);
   ear.position.set(-0.08, 0.96, 0.082);
@@ -278,6 +231,8 @@ function makeLaptop() {
   const screenGlowM = screenGlow(2.9, 1.6);
   screenGlowM.position.z = 0.07;
   screenAssy.add(screenGlowM);
+  // 供 HTML UI 精準對位：記住螢幕面與尺寸
+  g.userData.screen = { mesh: screenGlowM, w: 2.9, h: 1.6 };
   // 螢幕上緣鏡頭
   const cam = smallCircle(0.03, "#000000");
   cam.position.set(0, 0.92, 0.07);
@@ -333,14 +288,89 @@ gate.visible = false; // 改用滿版 CSS 門板過場，隱藏 3D 小閘門
 scene.add(gate);
 
 /* ---- 沿走廊佈置：閘門 → 裝置 + 少量抽象體（補景深氣氛） ---- */
-makeForm(deform(new THREE.IcosahedronGeometry(3, 6), 0.18), { pos: [-6, 2, -12], scale: 1.1, spin: [0.04, 0.06, 0.03] });
+/* ---- 健身器材構造物（橘色實體 + 白線框，取代抽象幾何） ---- */
+function makeDumbbell() {
+  const g = new THREE.Group();
+  const bar = wfGroup(new THREE.CylinderGeometry(0.11, 0.11, 2.6, 16));
+  bar.rotation.z = Math.PI / 2;
+  g.add(bar);
+  // 兩端各三片碟片，由大到小
+  [-1, 1].forEach((s) => {
+    [[0.62, 0], [0.52, 0.22], [0.42, 0.4]].forEach(([r, off]) => {
+      const disc = wfGroup(new THREE.CylinderGeometry(r, r, 0.16, 24));
+      disc.rotation.z = Math.PI / 2;
+      disc.position.x = s * (0.9 + off);
+      g.add(disc);
+    });
+  });
+  return g;
+}
+function makeKettlebell() {
+  const g = new THREE.Group();
+  const body = wfGroup(new THREE.SphereGeometry(0.85, 24, 18));
+  body.position.y = -0.15;
+  const handle = wfGroup(new THREE.TorusGeometry(0.55, 0.13, 12, 28, Math.PI));
+  handle.position.y = 0.55;
+  const base = wfGroup(new THREE.CylinderGeometry(0.52, 0.58, 0.16, 20));
+  base.position.y = -0.98;
+  g.add(body, handle, base);
+  return g;
+}
+function makeBarbell() {
+  const g = new THREE.Group();
+  const bar = wfGroup(new THREE.CylinderGeometry(0.07, 0.07, 5.4, 12));
+  bar.rotation.z = Math.PI / 2;
+  g.add(bar);
+  // 兩端槓片組 + 卡扣
+  [-1, 1].forEach((s) => {
+    [[0.95, 0.18, 2.0], [0.75, 0.15, 2.22], [0.55, 0.13, 2.4]].forEach(([r, h, x]) => {
+      const plate = wfGroup(new THREE.CylinderGeometry(r, r, h, 28));
+      plate.rotation.z = Math.PI / 2;
+      plate.position.x = s * x;
+      g.add(plate);
+    });
+    const collar = wfGroup(new THREE.CylinderGeometry(0.14, 0.14, 0.22, 14));
+    collar.rotation.z = Math.PI / 2;
+    collar.position.x = s * 1.82;
+    g.add(collar);
+  });
+  return g;
+}
+function makeWeightPlate() {
+  // 大槓片：環 + 內圈軸孔
+  const g = new THREE.Group();
+  const ring = wfGroup(new THREE.TorusGeometry(1.25, 0.45, 16, 40));
+  const hub = wfGroup(new THREE.CylinderGeometry(0.28, 0.28, 0.5, 18));
+  hub.rotation.x = Math.PI / 2;
+  g.add(ring, hub);
+  return g;
+}
+function placeProp(group, pos, scale = 1, spin = [0.02, 0.04, 0.015]) {
+  group.position.set(...pos);
+  group.scale.setScalar(scale);
+  group.rotation.set(
+    Math.random() * 0.6 - 0.3,
+    Math.random() * Math.PI * 2,
+    Math.random() * 0.5 - 0.25
+  );
+  group.userData.spin = spin;
+  group.userData.float = { amp: 0.55, off: Math.random() * 6, baseY: pos[1] };
+  scene.add(group);
+  forms.push(group);
+  return group;
+}
+
+/* ---- 沿走廊佈置：健身器材 + 裝置 ---- */
+placeProp(makeDumbbell(), [-6, 2, -12], 1.35, [0.03, 0.05, 0.02]);
 placeDevice(makeTablet(), [5.6, 1.6, -30], 1.0, 0.04, 3 / 10);      // 系統全覽 station 3
-makeForm(new THREE.TorusKnotGeometry(2.2, 0.6, 180, 18), { pos: [-5.5, -1, -42], scale: 0.9, spin: [0.04, 0.08, 0.03] });
-placeDevice(makePhone(), [4.8, 0.6, -52], 1.7, 0.06, 4 / 10);       // LINE 一站式 station 4
-placeDevice(makeLaptop(), [-5, 1, -66], 1.05, 0.03, 5 / 10);        // AI 後台 station 5
-makeForm(deform(new THREE.IcosahedronGeometry(4, 7), 0.2), { pos: [6.5, 2, -82], scale: 1, spin: [0.03, 0.05, 0.03] });
+placeProp(makeKettlebell(), [-5.5, -1, -42], 1.5, [0.02, 0.06, 0.02]);
+const devPhone = placeDevice(makePhone(), [4.8, 0.6, -52], 1.7, 0.06, 4 / 10); // LINE 一站式 station 4
+placeProp(makeDumbbell(), [6.8, -1.6, -59], 0.85, [0.04, 0.05, 0.03]);
+const devLaptop = placeDevice(makeLaptop(), [-5, 1, -66], 1.05, 0.03, 5 / 10); // AI 後台 station 5
+placeProp(makeBarbell(), [6.5, 2, -82], 1.05, [0.015, 0.04, 0.02]);
 placeDevice(makeTablet(), [-4.4, 1.2, -98], 1.15, 0.04, 8 / 10);    // FAQ station 8
-makeForm(new THREE.TorusGeometry(3.4, 0.9, 18, 80), { pos: [5, -1, -110], scale: 1, spin: [0.1, 0.03, 0.04] });
+placeProp(makeKettlebell(), [6, 1.6, -97], 1.1, [0.03, 0.05, 0.02]);
+placeProp(makeWeightPlate(), [5, -1, -110], 1.3, [0.06, 0.03, 0.03]);
 
 // 細小漂浮碎塊（近景，增加臨場感）
 const shardGeo = new THREE.OctahedronGeometry(0.35, 0);
@@ -386,9 +416,9 @@ const waypoints = [
   // LINE 站：飛抵手機螢幕正前方，停住（畫面接在手機螢幕上）
   { p: 0.41, pos: [2.95, 0.75, -48.5], look: [4.8, 0.6, -52] },
   { p: 0.49, pos: [3.15, 0.7, -48.9], look: [4.8, 0.6, -52] },
-  // AI 後台站：橫移到筆電螢幕正前方，停住
-  { p: 0.53, pos: [-2.85, 2.4, -62.2], look: [-5, 2.1, -66] },
-  { p: 0.61, pos: [-2.65, 2.32, -62.6], look: [-5, 2.1, -66] },
+  // AI 後台站：橫移到筆電螢幕正前方，停近一點（console 讀得清楚）
+  { p: 0.53, pos: [-3.45, 2.28, -63.3], look: [-5, 2.05, -66] },
+  { p: 0.61, pos: [-3.3, 2.22, -63.6], look: [-5, 2.05, -66] },
   { p: 0.66, pos: [-1.4, 1.2, -72], look: [0.8, 0.4, -84] },
   { p: 0.77, pos: [1.8, 0.2, -86], look: [-1, 0.4, -98] },
   { p: 0.88, pos: [-1.2, 0.8, -100], look: [0.6, 0.3, -112] },
@@ -510,10 +540,8 @@ function applyProgress(p) {
   // 會員 LINE 手機
   const aPh = actLocal(p, ACT_PHONE);
   const pO = bell(aPh);
+  phoneO = pO; // 位置交由 syncDeviceUI 每幀投影對位
   phone.style.opacity = pO.toFixed(3);
-  // 依視窗高度縮放，讓 LINE UI 貼齊 3D 手機螢幕的視覺大小
-  const phoneFit = Math.min(1.25, (innerHeight * 0.78) / 580);
-  phone.style.transform = `translate(-50%,-50%) translateY(${(1 - pO) * 40}px) scale(${(phoneFit * (0.92 + pO * 0.08)).toFixed(3)})`;
   const idx = Math.min(phoneMenuBtns.length - 1, Math.floor(aPh * phoneMenuBtns.length));
   if (aPh > 0 && aPh < 1 && idx !== activePhone) {
     activePhone = idx;
@@ -523,8 +551,8 @@ function applyProgress(p) {
   // AI 對話式後台 console
   const aCon = actLocal(p, ACT_CONSOLE);
   const cO = bell(aCon);
+  consoleO = cO; // 位置交由 syncDeviceUI 每幀投影對位
   consoleEl.style.opacity = cO.toFixed(3);
-  consoleEl.style.transform = `translate(-50%,-50%) translateY(${(1 - cO) * 30}px)`;
   if (aCon > 0 && aCon < 1) setConsole(aCon);
 
   // 章節索引
@@ -565,6 +593,60 @@ document.querySelectorAll("[data-goto]").forEach((el) => {
 const clock = new THREE.Clock();
 let renderProgress = 0;
 let lastT = 0;
+let phoneO = 0; // LINE UI 可見度（由 applyProgress 更新）
+let consoleO = 0; // console 可見度
+
+/* ---- HTML UI 精準對位：把 3D 螢幕面的四角投影到畫面座標 ---- */
+const _corner = new THREE.Vector3();
+function projectScreenQuad(device) {
+  const scr = device.userData.screen;
+  device.updateWorldMatrix(true, true);
+  const hw = scr.w / 2;
+  const hh = scr.h / 2;
+  const pts = [];
+  // TL, TR, BR, BL（局部 +y 朝上）
+  [[-hw, hh], [hw, hh], [hw, -hh], [-hw, -hh]].forEach(([x, y]) => {
+    _corner.set(x, y, 0);
+    scr.mesh.localToWorld(_corner);
+    _corner.project(camera);
+    pts.push({
+      x: (_corner.x * 0.5 + 0.5) * innerWidth,
+      y: (-_corner.y * 0.5 + 0.5) * innerHeight,
+    });
+  });
+  return pts;
+}
+function syncDeviceUI() {
+  // 確保投影矩陣是本幀鏡頭位置（render 前手動更新）
+  camera.updateMatrixWorld();
+  camera.matrixWorldInverse.copy(camera.matrixWorld).invert();
+
+  // 手機：LINE UI 以「高度」貼合 3D 螢幕、中心對中心
+  if (phoneO > 0.01 && devPhone.visible) {
+    const q = projectScreenQuad(devPhone);
+    const cx = (q[0].x + q[1].x + q[2].x + q[3].x) / 4;
+    const cy = (q[0].y + q[1].y + q[2].y + q[3].y) / 4;
+    const qh = (Math.hypot(q[3].x - q[0].x, q[3].y - q[0].y) + Math.hypot(q[2].x - q[1].x, q[2].y - q[1].y)) / 2;
+    const s = qh / phone.offsetHeight;
+    phone.style.left = "0";
+    phone.style.top = "0";
+    phone.style.transform =
+      `translate(${cx.toFixed(1)}px, ${(cy + (1 - phoneO) * 26).toFixed(1)}px) translate(-50%,-50%) scale(${s.toFixed(4)})`;
+  }
+  // 筆電：console 以「寬度」貼合 3D 螢幕、上緣對齊
+  if (consoleO > 0.01 && devLaptop.visible) {
+    const q = projectScreenQuad(devLaptop);
+    const topX = (q[0].x + q[1].x) / 2;
+    const topY = (q[0].y + q[1].y) / 2;
+    const qw = (Math.hypot(q[1].x - q[0].x, q[1].y - q[0].y) + Math.hypot(q[2].x - q[3].x, q[2].y - q[3].y)) / 2;
+    const s = qw / consoleEl.offsetWidth;
+    consoleEl.style.left = "0";
+    consoleEl.style.top = "0";
+    consoleEl.style.transformOrigin = "50% 0";
+    consoleEl.style.transform =
+      `translate(${topX.toFixed(1)}px, ${(topY + (1 - consoleO) * 26).toFixed(1)}px) translate(-50%,0) scale(${s.toFixed(4)})`;
+  }
+}
 
 // 自動進場過場（掃描完成後觸發）
 let introPlaying = false;
@@ -664,6 +746,9 @@ function tick(time) {
   camera.lookAt(_look);
   // 飛行傾斜，增加速度／臨場感
   camera.rotation.z = Math.sin(t * 0.3) * 0.012;
+
+  // HTML UI 精準貼上 3D 螢幕（投影對位，跟著鏡頭呼吸一起動）
+  syncDeviceUI();
 
   renderer.render(scene, camera);
   requestAnimationFrame(tick);
