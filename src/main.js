@@ -297,11 +297,13 @@ function placeDevice(group, pos, scale, spinY = 0.04, stationP = 0.5) {
   group.scale.setScalar(0); // 預設縮小，待飛入動畫顯示
   group.rotation.y = pos[0] > 0 ? -0.5 : 0.5;
   group.userData.spin = [0, spinY, 0];
-  group.userData.float = { amp: 0.45, off: Math.random() * 6, baseY: pos[1] };
+  // 浮動幅度收小：鏡頭會停在螢幕正前方，避免畫面上下晃
+  group.userData.float = { amp: 0.1, off: Math.random() * 6, baseY: pos[1] };
   group.userData.device = {
     baseX: pos[0],
     baseY: pos[1],
     baseZ: pos[2],
+    baseRotY: group.rotation.y, // 螢幕朝向鏡頭的基準角
     scaleTarget: scale,
     stationP,
     fromDir: pos[0] >= 0 ? 1 : -1, // 從遠處側方飛入
@@ -381,8 +383,12 @@ const waypoints = [
   { p: 0.13, pos: [1.6, 1, -3], look: [-1, 0.5, -14] },
   { p: 0.22, pos: [-2.2, 0.2, -16], look: [1, 0.6, -28] },
   { p: 0.33, pos: [1.4, 1.2, -30], look: [-1.2, 0.4, -42] },
-  { p: 0.44, pos: [-1.6, -0.4, -44], look: [1.2, 0.4, -56] },
-  { p: 0.55, pos: [2, 0.8, -58], look: [-0.6, 0.2, -70] },
+  // LINE 站：飛抵手機螢幕正前方，停住（畫面接在手機螢幕上）
+  { p: 0.41, pos: [2.95, 0.75, -48.5], look: [4.8, 0.6, -52] },
+  { p: 0.49, pos: [3.15, 0.7, -48.9], look: [4.8, 0.6, -52] },
+  // AI 後台站：橫移到筆電螢幕正前方，停住
+  { p: 0.53, pos: [-2.85, 2.4, -62.2], look: [-5, 2.1, -66] },
+  { p: 0.61, pos: [-2.65, 2.32, -62.6], look: [-5, 2.1, -66] },
   { p: 0.66, pos: [-1.4, 1.2, -72], look: [0.8, 0.4, -84] },
   { p: 0.77, pos: [1.8, 0.2, -86], look: [-1, 0.4, -98] },
   { p: 0.88, pos: [-1.2, 0.8, -100], look: [0.6, 0.3, -112] },
@@ -505,7 +511,9 @@ function applyProgress(p) {
   const aPh = actLocal(p, ACT_PHONE);
   const pO = bell(aPh);
   phone.style.opacity = pO.toFixed(3);
-  phone.style.transform = `translate(-50%,-50%) translateY(${(1 - pO) * 40}px) scale(${0.92 + pO * 0.08})`;
+  // 依視窗高度縮放，讓 LINE UI 貼齊 3D 手機螢幕的視覺大小
+  const phoneFit = Math.min(1.25, (innerHeight * 0.78) / 580);
+  phone.style.transform = `translate(-50%,-50%) translateY(${(1 - pO) * 40}px) scale(${(phoneFit * (0.92 + pO * 0.08)).toFixed(3)})`;
   const idx = Math.min(phoneMenuBtns.length - 1, Math.floor(aPh * phoneMenuBtns.length));
   if (aPh > 0 && aPh < 1 && idx !== activePhone) {
     activePhone = idx;
@@ -561,7 +569,7 @@ let lastT = 0;
 // 自動進場過場（掃描完成後觸發）
 let introPlaying = false;
 let introT = 0;
-const INTRO_DUR = 2.0;
+const INTRO_DUR = 3.2; // 配合 2.6s 開門，鏡頭緩慢推進
 const INTRO_START = { pos: [0, 1.2, 7], look: [0, 0.9, -9] }; // 門開時鏡頭緩緩推進
 function tick(time) {
   lenis.raf(time);
@@ -587,13 +595,13 @@ function tick(time) {
   // 裝置：按 station 進度飛入、停留、飛出
   devices.forEach((g) => {
     const d = g.userData.device;
-    // 與站台中心的距離，前 0.06 之內飛入、之後 0.08 飛出
+    // 與站台中心的距離：提早飛入、整站停留、離站才飛出
     const delta = renderProgress - d.stationP;
     let visibility;
-    if (delta < -0.06) visibility = 0;
-    else if (delta < 0) visibility = smootherstep((delta + 0.06) / 0.06);
-    else if (delta < 0.08) visibility = 1;
-    else if (delta < 0.14) visibility = 1 - smootherstep((delta - 0.08) / 0.06);
+    if (delta < -0.07) visibility = 0;
+    else if (delta < -0.01) visibility = smootherstep((delta + 0.07) / 0.06);
+    else if (delta < 0.11) visibility = 1;
+    else if (delta < 0.17) visibility = 1 - smootherstep((delta - 0.11) / 0.06);
     else visibility = 0;
     // 縮放與位置偏移：未顯示時隱形，飛入過程從遠處彈跳出來
     const offset = 1 - visibility;
@@ -602,9 +610,10 @@ function tick(time) {
     g.position.x = d.baseX + d.fromDir * offset * 7;
     g.position.y = d.baseY + Math.sin(t * 0.5 + g.userData.float.off) * g.userData.float.amp + offset * 4;
     g.position.z = d.baseZ + offset * 12;
-    // 旋轉
-    g.rotation.y += g.userData.spin[1] * 0.01;
-    g.rotation.x += g.userData.spin[0] * 0.005;
+    // 旋轉：不累積自轉，繞著「螢幕朝向鏡頭」的基準角輕輕擺動
+    // 飛入過程帶一點入場旋轉（offset 越大轉越多）
+    g.rotation.y = d.baseRotY + Math.sin(t * 0.45 + g.userData.float.off) * 0.05 + d.fromDir * offset * 0.9;
+    g.rotation.x = Math.sin(t * 0.3 + g.userData.float.off) * 0.02;
   });
 
   // 螢幕脈動發光
@@ -726,18 +735,18 @@ function enterWorld() {
   entry.classList.add("is-entering");
   bootPulse.classList.add("is-flash");
   portal.classList.add("is-armed");
-  // 2) entry 淡出，露出關閉的滿版門
+  // 2) entry 淡出，露出關閉的滿版門（停一拍，讓接縫脈動讀得到）
   setTimeout(() => {
     entry.classList.add("is-done");
     document.getElementById("topbar").classList.add("is-visible");
-  }, 750);
-  // 3) 滿版開門（門板左右滑開）+ 鏡頭緩緩推進
+  }, 850);
+  // 3) 滿版開門（門板緩緩左右滑開 2.6s）+ 鏡頭同步緩推
   setTimeout(() => {
     portal.classList.add("is-open");
     introPlaying = true;
-  }, 1150);
-  // 4) 門開完成後收起 portal
-  setTimeout(() => portal.classList.remove("is-armed"), 3000);
+  }, 2100);
+  // 4) 門完全開啟後收起 portal
+  setTimeout(() => portal.classList.remove("is-armed"), 5200);
 }
 
 entryCta.addEventListener("click", () => {
