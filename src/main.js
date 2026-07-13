@@ -372,6 +372,48 @@ placeDevice(makeTablet(), [-4.4, 1.2, -98], 1.15, 0.04, 8 / 10);    // FAQ stati
 placeProp(makeKettlebell(), [6, 1.6, -97], 1.1, [0.03, 0.05, 0.02]);
 placeProp(makeWeightPlate(), [5, -1, -110], 1.3, [0.06, 0.03, 0.03]);
 
+/* ---- 寫實壺鈴（Higgsfield 生成 → 去背）：融入線框世界的實拍 hero ---- */
+const billboards = [];
+{
+  const tex = new THREE.TextureLoader().load(`${import.meta.env.BASE_URL}gen-kettlebell.png`);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  const g = new THREE.Group();
+  // 背後橘色柔光
+  const glow = new THREE.Mesh(
+    new THREE.PlaneGeometry(6.2, 6.2),
+    new THREE.MeshBasicMaterial({ color: ACCENT, transparent: true, opacity: 0.16, blending: THREE.AdditiveBlending, depthWrite: false })
+  );
+  glow.position.z = -0.2;
+  // 細線框方框（呼應 HUD 語言）
+  const frame = new THREE.Mesh(
+    new THREE.PlaneGeometry(4.7, 4.7, 5, 5),
+    new THREE.MeshBasicMaterial({ color: "#ffffff", wireframe: true, transparent: true, opacity: 0.12 })
+  );
+  frame.position.z = -0.1;
+  // 四角辨識框
+  const corners = new THREE.Group();
+  [[-1, 1], [1, 1], [1, -1], [-1, -1]].forEach(([sx, sy]) => {
+    const pts = [
+      new THREE.Vector3(sx * 2.3, sy * 2.3 - sy * 0.5, 0),
+      new THREE.Vector3(sx * 2.3, sy * 2.3, 0),
+      new THREE.Vector3(sx * 2.3 - sx * 0.5, sy * 2.3, 0),
+    ];
+    corners.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),
+      new THREE.LineBasicMaterial({ color: ACCENT, transparent: true, opacity: 0.8 })));
+  });
+  // 寫實壺鈴（透明去背平面）
+  const plane = new THREE.Mesh(
+    new THREE.PlaneGeometry(4, 4),
+    new THREE.MeshBasicMaterial({ map: tex, transparent: true, alphaTest: 0.4 })
+  );
+  g.add(glow, frame, corners, plane);
+  g.position.set(-3.4, 1.5, -37);
+  g.userData.baseY = 1.5;
+  scene.add(g);
+  billboards.push(g);
+}
+
 // 細小漂浮碎塊（近景，增加臨場感）
 const shardGeo = new THREE.OctahedronGeometry(0.35, 0);
 const shardMat = new THREE.MeshBasicMaterial({ color: "#ffffff", wireframe: true, transparent: true, opacity: 0.35 });
@@ -710,6 +752,12 @@ function tick(time) {
   // 螢幕脈動發光
   const pulse = 0.5 + 0.5 * Math.sin(t * 1.5);
   screenGlows.forEach((m) => { m.material.opacity = 0.22 + pulse * 0.22; });
+
+  // 寫實壺鈴 billboard：面向鏡頭 + 輕微浮動
+  billboards.forEach((g, i) => {
+    g.position.y = g.userData.baseY + Math.sin(t * 0.5 + i) * 0.25;
+    g.quaternion.copy(camera.quaternion);
+  });
 
   // 閘門掃描光束：上下掃描
   gateScan.position.y = 2.4 + Math.sin(t * 1.6) * 2.0;
