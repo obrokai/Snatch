@@ -596,6 +596,15 @@ let lastT = 0;
 let phoneO = 0; // LINE UI 可見度（由 applyProgress 更新）
 let consoleO = 0; // console 可見度
 
+// 3D 互動：滑鼠視差
+let pointerX = 0, pointerY = 0, pointerTX = 0, pointerTY = 0;
+addEventListener("pointermove", (e) => {
+  pointerTX = (e.clientX / innerWidth) * 2 - 1;
+  pointerTY = (e.clientY / innerHeight) * 2 - 1;
+}, { passive: true });
+// 離開視窗時回正
+addEventListener("pointerleave", () => { pointerTX = 0; pointerTY = 0; }, { passive: true });
+
 /* ---- HTML UI 精準對位：把 3D 螢幕面的四角投影到畫面座標 ---- */
 const _corner = new THREE.Vector3();
 function projectScreenQuad(device) {
@@ -740,14 +749,20 @@ function tick(time) {
     gateScan.material.opacity = 0.55 + 0.35 * Math.abs(Math.sin(t * 1.6));
   }
 
-  camera.position.copy(_pos);
-  camera.position.x += Math.sin(t * 0.35) * 0.12;
-  camera.position.y += Math.sin(t * 0.5) * 0.08;
-  camera.lookAt(_look);
-  // 飛行傾斜，增加速度／臨場感
-  camera.rotation.z = Math.sin(t * 0.3) * 0.012;
+  // 滑鼠視差：平滑跟進（進場過場時不介入）
+  const par = introPlaying ? 0 : 1;
+  pointerX += (pointerTX * par - pointerX) * 0.06;
+  pointerY += (pointerTY * par - pointerY) * 0.06;
 
-  // HTML UI 精準貼上 3D 螢幕（投影對位，跟著鏡頭呼吸一起動）
+  camera.position.copy(_pos);
+  camera.position.x += Math.sin(t * 0.35) * 0.12 + pointerX * 0.9;
+  camera.position.y += Math.sin(t * 0.5) * 0.08 - pointerY * 0.6;
+  // 看向點也隨滑鼠偏移 → 產生「在空間裡看向四周」的 3D 視差
+  camera.lookAt(_look.x + pointerX * 0.5, _look.y - pointerY * 0.35, _look.z);
+  // 飛行傾斜，增加速度／臨場感
+  camera.rotation.z = Math.sin(t * 0.3) * 0.012 + pointerX * 0.012;
+
+  // HTML UI 精準貼上 3D 螢幕（投影對位，跟著鏡頭一起動）
   syncDeviceUI();
 
   renderer.render(scene, camera);
