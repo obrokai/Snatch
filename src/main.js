@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import Lenis from "lenis";
 import "./style.css";
@@ -31,18 +30,23 @@ const scene = new THREE.Scene();
 const BG_DARK = new THREE.Color("#0b0a0c");
 const BG_WARM = new THREE.Color("#1d0f06");
 scene.background = BG_DARK.clone();
-const fog = new THREE.FogExp2("#120a08", 0.018);
+const fog = new THREE.FogExp2("#120a08", 0.014);
 scene.fog = fog;
 
 const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 400);
 
-/* 環境光（CC0 HDRI）：給實體面一點高級反射 */
+/* 環境：Higgsfield 生成的寫實健身房全景 → 背景 + 反射環境（實體健身房渲染） */
 const pmrem = new THREE.PMREMGenerator(renderer);
-new RGBELoader().load(`${import.meta.env.BASE_URL}hdri/venue_1k.hdr`, (hdr) => {
-  scene.environment = pmrem.fromEquirectangular(hdr).texture;
-  scene.environmentIntensity = 0.25;
-  hdr.dispose();
-  pmrem.dispose();
+pmrem.compileEquirectangularShader();
+let gymBgReady = false;
+new THREE.TextureLoader().load(`${import.meta.env.BASE_URL}gym-pano.png`, (tex) => {
+  tex.mapping = THREE.EquirectangularReflectionMapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  scene.background = tex;            // 環繞的實體健身房（隨鏡頭/滑鼠看四周）
+  scene.backgroundIntensity = 0.9;
+  scene.environment = pmrem.fromEquirectangular(tex).texture; // 物件吃真實反射
+  scene.environmentIntensity = 0.55;
+  gymBgReady = true;
 });
 
 /* ---------------------------------------------------------------------- */
@@ -565,7 +569,9 @@ function applyProgress(p) {
 
   // 色彩過境：靠近構造物群（中段、收束）讓世界更橘、更暖；空檔回到暗
   const warm = 0.5 - 0.5 * Math.cos(p * Math.PI * 2 * 1.5);
-  scene.background.copy(BG_DARK).lerp(BG_WARM, warm * 0.7);
+  // 健身房全景就緒後不再覆蓋背景；未就緒時用暗色墊檔
+  if (!gymBgReady) scene.background.copy(BG_DARK).lerp(BG_WARM, warm * 0.7);
+  else scene.backgroundIntensity = 0.7 + warm * 0.35;
   fog.color.copy(BG_DARK).lerp(ACCENT_DEEP, warm * 0.25);
   fog.density = THREE.MathUtils.lerp(0.02, 0.014, warm);
   glowA.intensity = 45 + warm * 60;
