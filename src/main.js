@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import Lenis from "lenis";
 import "./style.css";
 
@@ -367,56 +368,82 @@ function placeProp(group, pos, scale = 1, spin = [0.02, 0.04, 0.015]) {
 /* ---- 沿走廊佈置：健身器材 + 裝置 ---- */
 placeProp(makeDumbbell(), [-6, 2, -12], 1.35, [0.03, 0.05, 0.02]);
 placeDevice(makeTablet(), [5.6, 1.6, -30], 1.0, 0.04, 3 / 10);      // 系統全覽 station 3
-placeProp(makeKettlebell(), [-5.5, -1, -42], 1.5, [0.02, 0.06, 0.02]);
 const devPhone = placeDevice(makePhone(), [4.8, 0.6, -52], 1.7, 0.06, 4 / 10); // LINE 一站式 station 4
-placeProp(makeDumbbell(), [6.8, -1.6, -59], 0.85, [0.04, 0.05, 0.03]);
 const devLaptop = placeDevice(makeLaptop(), [-5, 1, -66], 1.05, 0.03, 5 / 10); // AI 後台 station 5
 placeProp(makeBarbell(), [6.5, 2, -82], 1.05, [0.015, 0.04, 0.02]);
 placeDevice(makeTablet(), [-4.4, 1.2, -98], 1.15, 0.04, 8 / 10);    // FAQ station 8
 placeProp(makeKettlebell(), [6, 1.6, -97], 1.1, [0.03, 0.05, 0.02]);
 placeProp(makeWeightPlate(), [5, -1, -110], 1.3, [0.06, 0.03, 0.03]);
 
-/* ---- 寫實壺鈴（Higgsfield 生成 → 去背）：融入線框世界的實拍 hero ---- */
-const billboards = [];
-{
-  const tex = new THREE.TextureLoader().load(`${import.meta.env.BASE_URL}gen-kettlebell.png`);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 4;
+/* ---- 寫實 3D 器材（Higgsfield 生成 GLB）：可 360° 旋轉、可拖曳互動 ---- */
+const heroModels = [];
+const gltfLoader = new GLTFLoader();
+// 品牌 HUD 外框（線框方框 + 四角辨識框 + 背後柔光），包住真實 3D 模型
+function heroHud(size) {
   const g = new THREE.Group();
-  // 背後橘色柔光
   const glow = new THREE.Mesh(
-    new THREE.PlaneGeometry(6.2, 6.2),
-    new THREE.MeshBasicMaterial({ color: ACCENT, transparent: true, opacity: 0.16, blending: THREE.AdditiveBlending, depthWrite: false })
+    new THREE.PlaneGeometry(size * 1.8, size * 1.8),
+    new THREE.MeshBasicMaterial({ color: ACCENT, transparent: true, opacity: 0.14, blending: THREE.AdditiveBlending, depthWrite: false })
   );
-  glow.position.z = -0.2;
-  // 細線框方框（呼應 HUD 語言）
+  glow.position.z = -size * 0.6;
   const frame = new THREE.Mesh(
-    new THREE.PlaneGeometry(4.7, 4.7, 5, 5),
-    new THREE.MeshBasicMaterial({ color: "#ffffff", wireframe: true, transparent: true, opacity: 0.12 })
+    new THREE.PlaneGeometry(size * 1.35, size * 1.35, 5, 5),
+    new THREE.MeshBasicMaterial({ color: "#ffffff", wireframe: true, transparent: true, opacity: 0.1 })
   );
-  frame.position.z = -0.1;
-  // 四角辨識框
+  frame.position.z = -size * 0.55;
   const corners = new THREE.Group();
+  const c = size * 0.7;
   [[-1, 1], [1, 1], [1, -1], [-1, -1]].forEach(([sx, sy]) => {
     const pts = [
-      new THREE.Vector3(sx * 2.3, sy * 2.3 - sy * 0.5, 0),
-      new THREE.Vector3(sx * 2.3, sy * 2.3, 0),
-      new THREE.Vector3(sx * 2.3 - sx * 0.5, sy * 2.3, 0),
+      new THREE.Vector3(sx * c, sy * c - sy * size * 0.16, 0),
+      new THREE.Vector3(sx * c, sy * c, 0),
+      new THREE.Vector3(sx * c - sx * size * 0.16, sy * c, 0),
     ];
     corners.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),
-      new THREE.LineBasicMaterial({ color: ACCENT, transparent: true, opacity: 0.8 })));
+      new THREE.LineBasicMaterial({ color: ACCENT, transparent: true, opacity: 0.75 })));
   });
-  // 寫實壺鈴（透明去背平面）
-  const plane = new THREE.Mesh(
-    new THREE.PlaneGeometry(4, 4),
-    new THREE.MeshBasicMaterial({ map: tex, transparent: true, alphaTest: 0.4 })
-  );
-  g.add(glow, frame, corners, plane);
-  g.position.set(-3.4, 1.5, -37);
-  g.userData.baseY = 1.5;
-  scene.add(g);
-  billboards.push(g);
+  corners.position.z = -size * 0.55;
+  g.add(glow, frame, corners);
+  g.userData.hudBillboard = true; // 外框永遠面向鏡頭
+  return g;
 }
+function loadHeroModel(file, { pos, size = 3, station, spin = 0.35, tilt = 0.12 }) {
+  const holder = new THREE.Group();
+  holder.position.set(...pos);
+  holder.userData = { baseY: pos[1], station, spin, dragV: 0, rot: 0 };
+  const hud = heroHud(size);
+  holder.add(hud);
+  holder.userData.hud = hud;
+  scene.add(holder);
+  heroModels.push(holder);
+
+  gltfLoader.load(`${import.meta.env.BASE_URL}models/${file}`, (gltf) => {
+    const model = gltf.scene;
+    // 置中 + 正規化大小到 size
+    const box = new THREE.Box3().setFromObject(model);
+    const c = box.getCenter(new THREE.Vector3());
+    const s = box.getSize(new THREE.Vector3());
+    const scale = size / Math.max(s.x, s.y, s.z);
+    model.position.sub(c.multiplyScalar(scale));
+    model.scale.setScalar(scale);
+    model.traverse((o) => {
+      if (o.isMesh) {
+        o.castShadow = false;
+        if (o.material) o.material.envMapIntensity = 1.1; // 吃健身房環境反射
+      }
+    });
+    const pivot = new THREE.Group(); // 旋轉樞軸
+    pivot.add(model);
+    pivot.rotation.x = tilt;
+    holder.add(pivot);
+    holder.userData.pivot = pivot;
+  });
+  return holder;
+}
+
+// 壺鈴（系統全覽附近）＋ 啞鈴（LINE/AI 之間），成為可互動的寫實 hero
+loadHeroModel("kettlebell.glb", { pos: [-3.4, 1.5, -37], size: 3.2, station: 3 / 10, spin: 0.3 });
+loadHeroModel("dumbbell.glb", { pos: [5.2, 0.9, -58], size: 3.6, station: 5.5 / 10, spin: 0.4 });
 
 // 細小漂浮碎塊（近景，增加臨場感）
 const shardGeo = new THREE.OctahedronGeometry(0.35, 0);
@@ -653,6 +680,26 @@ addEventListener("pointermove", (e) => {
 // 離開視窗時回正
 addEventListener("pointerleave", () => { pointerTX = 0; pointerTY = 0; }, { passive: true });
 
+// 拖曳旋轉：拖動時把速度加到最靠近鏡頭的可見 hero 模型（可 360° 把玩）
+let dragging = false, dragPrevX = 0;
+addEventListener("pointerdown", (e) => { dragging = true; dragPrevX = e.clientX; }, { passive: true });
+addEventListener("pointerup", () => { dragging = false; }, { passive: true });
+addEventListener("pointermove", (e) => {
+  if (!dragging) return;
+  const dx = e.clientX - dragPrevX;
+  dragPrevX = e.clientX;
+  // 找目前畫面中央、最近的 hero 模型
+  let best = null, bestZ = Infinity;
+  heroModels.forEach((h) => {
+    const dz = Math.abs(h.position.z - camera.position.z);
+    if (h.userData.pivot && dz < bestZ) { bestZ = dz; best = h; }
+  });
+  if (best) best.userData.dragV += dx * 0.06;
+}, { passive: true });
+document.body.style.cursor = "grab";
+addEventListener("pointerdown", () => (document.body.style.cursor = "grabbing"), { passive: true });
+addEventListener("pointerup", () => (document.body.style.cursor = "grab"), { passive: true });
+
 /* ---- HTML UI 精準對位：把 3D 螢幕面的四角投影到畫面座標 ---- */
 const _corner = new THREE.Vector3();
 function projectScreenQuad(device) {
@@ -759,10 +806,17 @@ function tick(time) {
   const pulse = 0.5 + 0.5 * Math.sin(t * 1.5);
   screenGlows.forEach((m) => { m.material.opacity = 0.22 + pulse * 0.22; });
 
-  // 寫實壺鈴 billboard：面向鏡頭 + 輕微浮動
-  billboards.forEach((g, i) => {
-    g.position.y = g.userData.baseY + Math.sin(t * 0.5 + i) * 0.25;
-    g.quaternion.copy(camera.quaternion);
+  // 寫實 3D 器材：自轉 + 浮動 + 拖曳慣性；HUD 外框永遠面向鏡頭
+  heroModels.forEach((h, i) => {
+    const d = h.userData;
+    h.position.y = d.baseY + Math.sin(t * 0.5 + i) * 0.22;
+    if (d.pivot) {
+      // 自轉 + 拖曳附加速度（慣性衰減）
+      d.rot += (d.spin * 0.6 + d.dragV) * 0.016;
+      d.dragV *= 0.92;
+      d.pivot.rotation.y = d.rot;
+    }
+    if (d.hud) d.hud.quaternion.copy(camera.quaternion);
   });
 
   // 閘門掃描光束：上下掃描
