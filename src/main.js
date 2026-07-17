@@ -44,7 +44,7 @@ new THREE.TextureLoader().load(`${import.meta.env.BASE_URL}gym-pano.png`, (tex) 
   tex.mapping = THREE.EquirectangularReflectionMapping;
   tex.colorSpace = THREE.SRGBColorSpace;
   scene.background = tex;            // 環繞的實體健身房（隨鏡頭/滑鼠看四周）
-  scene.backgroundIntensity = 0.9;
+  scene.backgroundIntensity = 0.55;
   scene.environment = pmrem.fromEquirectangular(tex).texture; // 物件吃真實反射
   scene.environmentIntensity = 0.55;
   gymBgReady = true;
@@ -250,6 +250,74 @@ function makeLaptop() {
   g.add(screenAssy);
   return g;
 }
+
+/* ---- 寫實裝置（Higgsfield GLB body + 隱形螢幕面對位 HTML UI） ---- */
+const gltfLoader = new GLTFLoader();
+function makeDeviceGLB(file, { screenW, screenH, glowW, glowH, fit, modelPos = [0, 0, 0], modelRot = [0, 0, 0], glowZ }) {
+  const g = new THREE.Group();
+  // 隱形螢幕面：HTML UI（LINE 卡 / console）投影對位用
+  const screen = new THREE.Mesh(
+    new THREE.PlaneGeometry(screenW, screenH),
+    new THREE.MeshBasicMaterial({ visible: false })
+  );
+  screen.position.z = glowZ;
+  g.add(screen);
+  g.userData.screen = { mesh: screen, w: screenW, h: screenH };
+  // 螢幕發光（讓內容區透出橘光）
+  const glow = screenGlow(glowW, glowH);
+  glow.position.z = glowZ + 0.002;
+  g.add(glow);
+  // 寫實 GLB 機身
+  gltfLoader.load(`${import.meta.env.BASE_URL}models/${file}`, (gltf) => {
+    const m = gltf.scene;
+    const box = new THREE.Box3().setFromObject(m);
+    const c = box.getCenter(new THREE.Vector3());
+    const s = box.getSize(new THREE.Vector3());
+    const scale = fit / Math.max(s.x, s.y, s.z);
+    m.position.set(0, 0, 0).sub(c.clone().multiplyScalar(scale));
+    m.position.add(new THREE.Vector3(...modelPos));
+    m.scale.setScalar(scale);
+    m.rotation.set(...modelRot);
+    m.traverse((o) => { if (o.isMesh && o.material) o.material.envMapIntensity = 1.0; });
+    g.add(m);
+  });
+  return g;
+}
+function makePhoneReal() {
+  // 手機直立、螢幕朝 +Z；螢幕面尺寸沿用線框版比例
+  return makeDeviceGLB("phone.glb", {
+    screenW: 0.92, screenH: 1.78, glowW: 0.92, glowH: 1.78, glowZ: 0.09,
+    fit: 2.35, modelPos: [0, 0, -0.05], modelRot: [0, 0, 0],
+  });
+}
+function makeLaptopReal() {
+  // 筆電螢幕上仰；隱形螢幕面同步仰角
+  const g = new THREE.Group();
+  const assy = new THREE.Group();
+  const screen = new THREE.Mesh(new THREE.PlaneGeometry(2.9, 1.6), new THREE.MeshBasicMaterial({ visible: false }));
+  screen.position.z = 0.05;
+  assy.add(screen);
+  const glow = screenGlow(2.9, 1.6);
+  glow.position.z = 0.055;
+  assy.add(glow);
+  assy.position.set(0, 1.02, -1.0);
+  assy.rotation.x = -0.32;
+  g.add(assy);
+  g.userData.screen = { mesh: screen, w: 2.9, h: 1.6 };
+  gltfLoader.load(`${import.meta.env.BASE_URL}models/laptop.glb`, (gltf) => {
+    const m = gltf.scene;
+    const box = new THREE.Box3().setFromObject(m);
+    const c = box.getCenter(new THREE.Vector3());
+    const s = box.getSize(new THREE.Vector3());
+    const scale = 4.6 / Math.max(s.x, s.y, s.z);
+    m.position.set(0, 0, 0).sub(c.clone().multiplyScalar(scale));
+    m.scale.setScalar(scale);
+    m.traverse((o) => { if (o.isMesh && o.material) o.material.envMapIntensity = 1.0; });
+    g.add(m);
+  });
+  return g;
+}
+
 // 裝置註冊：捲動進度接近 station 時飛入並停留，遠離後飛出
 const devices = [];
 function placeDevice(group, pos, scale, spinY = 0.04, stationP = 0.5) {
@@ -368,8 +436,8 @@ function placeProp(group, pos, scale = 1, spin = [0.02, 0.04, 0.015]) {
 /* ---- 沿走廊佈置：健身器材 + 裝置 ---- */
 placeProp(makeDumbbell(), [-6, 2, -12], 1.35, [0.03, 0.05, 0.02]);
 placeDevice(makeTablet(), [5.6, 1.6, -30], 1.0, 0.04, 3 / 10);      // 系統全覽 station 3
-const devPhone = placeDevice(makePhone(), [4.8, 0.6, -52], 1.7, 0.06, 4 / 10); // LINE 一站式 station 4
-const devLaptop = placeDevice(makeLaptop(), [-5, 1, -66], 1.05, 0.03, 5 / 10); // AI 後台 station 5
+const devPhone = placeDevice(makePhoneReal(), [4.8, 0.6, -52], 1.7, 0.06, 4 / 10); // LINE 一站式 station 4（寫實 GLB）
+const devLaptop = placeDevice(makeLaptopReal(), [-5, 1, -66], 1.05, 0.03, 5 / 10); // AI 後台 station 5（寫實 GLB）
 placeProp(makeBarbell(), [6.5, 2, -82], 1.05, [0.015, 0.04, 0.02]);
 placeDevice(makeTablet(), [-4.4, 1.2, -98], 1.15, 0.04, 8 / 10);    // FAQ station 8
 placeProp(makeKettlebell(), [6, 1.6, -97], 1.1, [0.03, 0.05, 0.02]);
@@ -377,7 +445,6 @@ placeProp(makeWeightPlate(), [5, -1, -110], 1.3, [0.06, 0.03, 0.03]);
 
 /* ---- 寫實 3D 器材（Higgsfield 生成 GLB）：可 360° 旋轉、可拖曳互動 ---- */
 const heroModels = [];
-const gltfLoader = new GLTFLoader();
 // 品牌 HUD 外框（線框方框 + 四角辨識框 + 背後柔光），包住真實 3D 模型
 function heroHud(size) {
   const g = new THREE.Group();
@@ -598,7 +665,7 @@ function applyProgress(p) {
   const warm = 0.5 - 0.5 * Math.cos(p * Math.PI * 2 * 1.5);
   // 健身房全景就緒後不再覆蓋背景；未就緒時用暗色墊檔
   if (!gymBgReady) scene.background.copy(BG_DARK).lerp(BG_WARM, warm * 0.7);
-  else scene.backgroundIntensity = 0.7 + warm * 0.35;
+  else scene.backgroundIntensity = 0.42 + warm * 0.22;
   fog.color.copy(BG_DARK).lerp(ACCENT_DEEP, warm * 0.25);
   fog.density = THREE.MathUtils.lerp(0.02, 0.014, warm);
   glowA.intensity = 45 + warm * 60;
