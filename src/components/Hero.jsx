@@ -53,12 +53,12 @@ export default function Hero({ start }) {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(78%_62%_at_50%_50%,rgba(8,8,11,0.42),rgba(8,8,11,0.93))]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[30vh] bg-gradient-to-t from-[#08080b] to-transparent" />
 
-      {/* 裝飾器材：360° 旋轉中的橘柄壺鈴 / 啞鈴，同時緩慢漂浮 */}
-      <div className="pointer-events-none absolute left-[2%] top-[16%] w-[24vw] max-w-[300px] animate-float hidden sm:block">
-        <RotatingProp src={`${import.meta.env.BASE_URL}deco-kettlebell.mp4`} rate={0.45} className="w-full h-auto opacity-90" />
+      {/* 裝飾器材：捲動時旋轉的橘柄壺鈴 / 啞鈴，同時緩慢漂浮 */}
+      <div className="pointer-events-none absolute left-[2%] top-[16%] w-[24vw] max-w-[300px] aspect-square animate-float hidden sm:block">
+        <RotatingProp base={`${import.meta.env.BASE_URL}props/kettlebell/frame_`} pxPerRotation={1500} className="w-full h-full" />
       </div>
-      <div className="pointer-events-none absolute right-[1%] bottom-[10%] w-[26vw] max-w-[340px] animate-float-delayed hidden sm:block">
-        <RotatingProp src={`${import.meta.env.BASE_URL}deco-dumbbell.mp4`} rate={0.4} className="w-full h-auto opacity-90" />
+      <div className="pointer-events-none absolute right-[1%] bottom-[10%] w-[26vw] max-w-[340px] aspect-square animate-float-delayed hidden sm:block">
+        <RotatingProp base={`${import.meta.env.BASE_URL}props/dumbbell/frame_`} pxPerRotation={1800} offset={0.3} reverse className="w-full h-full" />
       </div>
 
       <div ref={root} className="relative z-10 text-center px-6 will-change-transform">

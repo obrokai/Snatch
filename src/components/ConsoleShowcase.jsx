@@ -53,9 +53,9 @@ export default function ConsoleShowcase() {
       {/* 裝飾：旋轉中的橘柄壺鈴 */}
       <div
         ref={deco}
-        className="pointer-events-none absolute right-[-5%] top-[10%] w-[26vw] max-w-[340px] hidden md:block"
+        className="pointer-events-none absolute right-[-5%] top-[10%] w-[26vw] max-w-[340px] aspect-square hidden md:block"
       >
-        <RotatingProp src={`${import.meta.env.BASE_URL}deco-kettlebell.mp4`} rate={0.42} className="w-full h-auto opacity-85" />
+        <RotatingProp base={`${import.meta.env.BASE_URL}props/kettlebell/frame_`} pxPerRotation={1300} offset={0.6} reverse className="w-full h-full opacity-85" />
       </div>
 
       <div className="relative h-full max-w-6xl mx-auto px-6 grid md:grid-cols-[1fr_1.25fr] items-center gap-10">

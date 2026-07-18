@@ -53,9 +53,9 @@ export default function PhoneShowcase() {
       {/* 裝飾：旋轉中的橘柄啞鈴 */}
       <div
         ref={deco}
-        className="pointer-events-none absolute -left-12 top-[14%] w-[28vw] max-w-[360px] hidden md:block"
+        className="pointer-events-none absolute -left-12 top-[14%] w-[28vw] max-w-[360px] aspect-square hidden md:block"
       >
-        <RotatingProp src={`${import.meta.env.BASE_URL}deco-dumbbell.mp4`} rate={0.38} className="w-full h-auto opacity-85" />
+        <RotatingProp base={`${import.meta.env.BASE_URL}props/dumbbell/frame_`} pxPerRotation={1400} offset={0.15} className="w-full h-full opacity-85" />
       </div>
 
       <div className="relative h-full max-w-6xl mx-auto px-6 grid md:grid-cols-2 items-center gap-10">
