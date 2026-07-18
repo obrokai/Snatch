@@ -33,8 +33,8 @@ export default function DoorIntro({ onOpen }) {
   const openDoors = () => {
     setPhase("opening");
     onOpen?.();
-    setTimeout(() => setSlid(true), 400); // 先關門一拍再滑開
-    setTimeout(() => setPhase("done"), 3100);
+    setTimeout(() => setSlid(true), 750); // 先讓門板 + 徽章成形一拍，再滑開
+    setTimeout(() => setPhase("done"), 3350);
   };
 
   useEffect(() => {
@@ -59,9 +59,11 @@ export default function DoorIntro({ onOpen }) {
         >
           <video
             ref={videoRef}
-            src={`${import.meta.env.BASE_URL}entry-switch.mov`}
+            src={`${import.meta.env.BASE_URL}entry-portrait.mp4`}
             poster={`${import.meta.env.BASE_URL}entry-portrait.png`}
             muted
+            loop
+            autoPlay
             playsInline
             preload="auto"
             className="w-full h-full object-cover"
@@ -112,25 +114,50 @@ export default function DoorIntro({ onOpen }) {
         </div>
       </div>
 
-      {/* 滿版門板：只在 opening 時出現（關門一拍 → 滑開露出主頁） */}
+      {/* 滿版門板（升級）：只在 opening 時出現（成形一拍 → 泛光 → 滑開露出主頁） */}
       {opening && (
-        <div className="absolute inset-0 z-10">
+        <div className="absolute inset-0 z-10 overflow-hidden">
+          {/* 左門 */}
           <div
-            className="door-panel absolute top-0 left-0 h-full w-1/2 bg-gradient-to-r from-[#07060a] to-[#0b0908] shadow-[inset_-1px_0_0_rgba(255,107,26,0.45)] flex items-center justify-end"
+            className="door-panel door-surface absolute inset-y-0 left-0 w-1/2"
             style={{ transform: slid ? "translateX(-100%)" : "translateX(0)" }}
           >
-            <span className="font-mono text-sm tracking-[0.42em] text-white/40 translate-x-10">
-              SNATCH<span className="text-accent">OS</span>
+            <div className="door-lines" />
+            <div className="door-edge door-edge--r" />
+            <span className="absolute top-8 left-8 font-mono text-[0.68rem] tracking-[0.42em] text-white/25">
+              SNATCH<span className="text-accent/70">OS</span>
+            </span>
+            <span className="absolute bottom-8 left-8 font-mono text-[0.6rem] tracking-[0.3em] text-white/15">
+              GATE · 01
             </span>
           </div>
+          {/* 右門 */}
           <div
-            className="door-panel absolute top-0 right-0 h-full w-1/2 bg-gradient-to-l from-[#07060a] to-[#0b0908] shadow-[inset_1px_0_0_rgba(255,107,26,0.45)]"
+            className="door-panel door-surface door-surface--r absolute inset-y-0 right-0 w-1/2"
             style={{ transform: slid ? "translateX(100%)" : "translateX(0)" }}
-          />
+          >
+            <div className="door-lines" />
+            <div className="door-edge door-edge--l" />
+            <span className="absolute bottom-8 right-8 font-mono text-[0.6rem] tracking-[0.3em] text-white/15">
+              ACCESS · GRANTED
+            </span>
+          </div>
+
+          {/* 中央發光接縫 */}
           <div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[2px] bg-gradient-to-b from-transparent via-accent to-transparent shadow-[0_0_24px_4px_rgba(255,107,26,0.7)]"
-            style={{ height: slid ? "120%" : "64%", opacity: slid ? 0 : 1, transition: "height 1s ease, opacity 1s ease" }}
+            className="door-seam"
+            style={{ height: slid ? "135%" : "72%", opacity: slid ? 0 : 1 }}
           />
+          {/* 中央徽章 */}
+          <div
+            className="door-emblem"
+            style={{ opacity: slid ? 0 : 1, transform: `translate(-50%,-50%) scale(${slid ? 1.5 : 1})` }}
+          >
+            <div className="door-emblem__ring" />
+            <div className="door-emblem__core" />
+          </div>
+          {/* 開門瞬間泛光 */}
+          {slid && <div className="door-flash" />}
         </div>
       )}
     </div>

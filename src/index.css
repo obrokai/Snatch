@@ -69,6 +69,104 @@ html.lenis body {
   transition: transform 2.4s cubic-bezier(0.72, 0, 0.22, 1);
   will-change: transform;
 }
+
+/* ---- 進站門板（升級：拉絲金屬 + 發光接縫 + 徽章 + 開門泛光） ---- */
+.door-surface {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), transparent 26%),
+    linear-gradient(180deg, transparent 70%, rgba(0, 0, 0, 0.55)),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.014) 0 2px, transparent 2px 7px),
+    linear-gradient(90deg, #100c11, #08070a 88%);
+}
+.door-surface--r {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), transparent 26%),
+    linear-gradient(180deg, transparent 70%, rgba(0, 0, 0, 0.55)),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.014) 0 2px, transparent 2px 7px),
+    linear-gradient(270deg, #100c11, #08070a 88%);
+}
+/* 機械橫向接縫 */
+.door-lines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0 76px,
+    rgba(255, 255, 255, 0.028) 76px 77px,
+    transparent 77px 78px
+  );
+  mask-image: linear-gradient(180deg, transparent, #000 18%, #000 82%, transparent);
+}
+/* 內緣斜面高光（朝接縫那側） */
+.door-edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, transparent, rgba(255, 150, 90, 0.85) 45%, rgba(255, 150, 90, 0.85) 55%, transparent);
+  box-shadow: 0 0 26px 2px rgba(255, 107, 26, 0.5);
+}
+.door-edge--r { right: 0; }
+.door-edge--l { left: 0; }
+/* 中央發光接縫 */
+.door-seam {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 3px;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(180deg, transparent, #ffb488, #fff 50%, #ffb488, transparent);
+  box-shadow: 0 0 34px 7px rgba(255, 107, 26, 0.85), 0 0 90px 20px rgba(255, 107, 26, 0.35);
+  transition: height 1.1s cubic-bezier(0.5, 0, 0.2, 1), opacity 1.1s ease;
+}
+/* 中央徽章（跨在接縫上，開門時放大淡出） */
+.door-emblem {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: clamp(96px, 12vw, 150px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.7s ease, transform 1.1s cubic-bezier(0.5, 0, 0.2, 1);
+}
+.door-emblem__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 138, 71, 0.55);
+  box-shadow: 0 0 26px rgba(255, 107, 26, 0.4), inset 0 0 24px rgba(255, 107, 26, 0.18);
+  animation: emblemSpin 14s linear infinite;
+}
+.door-emblem__ring::before,
+.door-emblem__ring::after {
+  content: "";
+  position: absolute;
+  background: rgba(255, 138, 71, 0.8);
+  box-shadow: 0 0 10px rgba(255, 107, 26, 0.8);
+}
+.door-emblem__ring::before { top: -3px; left: 50%; width: 2px; height: 8px; transform: translateX(-50%); }
+.door-emblem__ring::after { bottom: -3px; left: 50%; width: 2px; height: 8px; transform: translateX(-50%); }
+.door-emblem__core {
+  position: absolute;
+  inset: 34%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #ff8a47, #e85d0a 70%);
+  box-shadow: 0 0 24px rgba(255, 107, 26, 0.7);
+}
+@keyframes emblemSpin { to { transform: rotate(360deg); } }
+/* 開門瞬間泛光 */
+.door-flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 170, 100, 0.7), rgba(255, 107, 26, 0.25) 30%, transparent 55%);
+  animation: doorFlash 1.3s ease-out forwards;
+}
+@keyframes doorFlash {
+  0% { opacity: 0; transform: scale(0.4); }
+  22% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.6); }
+}
 @keyframes scanline {
   0%, 100% { top: 8%; opacity: 0.35; }
   50% { top: 88%; opacity: 1; }

@@ -8,6 +8,7 @@ import PhoneShowcase from "./components/PhoneShowcase.jsx";
 import ConsoleShowcase from "./components/ConsoleShowcase.jsx";
 import StickyFeature from "./components/StickyFeature.jsx";
 import Reveal from "./components/Reveal.jsx";
+import ScrollProgress from "./components/ScrollProgress.jsx";
 
 const PAINS = [
   { h: "人工作業耗時", d: "查會籍、對堂數全靠櫃檯人工，尖峰時段大排長龍。" },
@@ -24,18 +25,19 @@ export default function App() {
     <>
       <Backdrop />
       <DoorIntro onOpen={() => setEntered(true)} />
+      <ScrollProgress show={entered} />
 
-      {/* 頂部品牌列 */}
+      {/* 頂部品牌列（進站後淡入 + 霧面底） */}
       <header
-        className="fixed top-0 inset-x-0 z-40 flex items-center justify-between px-6 md:px-10 py-5 transition-opacity duration-700"
-        style={{ opacity: entered ? 1 : 0 }}
+        className="fixed top-0 inset-x-0 z-40 flex items-center justify-between px-6 md:px-10 py-4 transition-all duration-700 border-b border-white/[0.06] bg-[#08080b]/60 backdrop-blur-md"
+        style={{ opacity: entered ? 1 : 0, transform: entered ? "translateY(0)" : "translateY(-100%)" }}
       >
         <a href="#top" className="font-mono tracking-[0.3em] text-sm">
           SNATCH<span className="text-accent">OS</span>
         </a>
         <a
           href="mailto:hello@snatch.tw?subject=預約免費諮詢"
-          className="font-mono text-[0.72rem] tracking-[0.18em] text-white/70 border border-white/15 rounded-full px-4 py-2 transition hover:border-accent hover:text-accent"
+          className="font-mono text-[0.72rem] tracking-[0.18em] text-white/70 border border-white/15 rounded-full px-4 py-2 transition hover:border-accent hover:text-accent hover:bg-accent/5"
         >
           預約諮詢
         </a>
