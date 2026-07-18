@@ -428,3 +428,41 @@ html.lenis body {
 .cns-note { margin-top: 22px; font-size: 0.66rem; color: rgba(255, 255, 255, 0.5); }
 .cns-note em { color: #ff8a47; font-style: normal; }
 
+
+/* ============================================================
+   系統全覽 hub / 合規 / FAQ 特效
+   ============================================================ */
+/* 連線資料流：dash 沿線流向中心 */
+@keyframes hub-flow {
+  from { stroke-dashoffset: 50; }
+  to { stroke-dashoffset: 0; }
+}
+.hub-pulse { animation: hub-flow 2.8s linear infinite; }
+
+/* 核心呼吸光環 */
+@keyframes core-breathe {
+  0%, 100% { box-shadow: 0 0 30px -6px rgba(255, 107, 26, 0.45), inset 0 0 0 1px rgba(255, 107, 26, 0.15); }
+  50% { box-shadow: 0 0 60px -6px rgba(255, 107, 26, 0.75), inset 0 0 0 1px rgba(255, 107, 26, 0.3); }
+}
+.hub-core { animation: core-breathe 3.2s ease-in-out infinite; }
+
+/* 合規：價格劃線掃過 */
+@keyframes strike {
+  from { width: 0; }
+  to { width: 100%; }
+}
+.strike-line {
+  width: 0;
+  animation: strike 0.6s cubic-bezier(0.6, 0, 0.2, 1) forwards;
+  box-shadow: 0 0 8px rgba(255, 107, 26, 0.8);
+}
+
+/* NT$0 脈衝光暈 */
+@keyframes zero-pulse {
+  0%, 100% { text-shadow: 0 0 40px rgba(255, 107, 26, 0.45); }
+  50% { text-shadow: 0 0 90px rgba(255, 107, 26, 0.85), 0 0 30px rgba(255, 138, 71, 0.5); }
+}
+.zero-glow { animation: zero-pulse 3s ease-in-out infinite; }
+
+/* FAQ 開合：+ 轉為 −（豎線收起） */
+details.faq[open] .faq-vert { transform: translate(-50%, -50%) rotate(90deg) scaleX(0.05); }

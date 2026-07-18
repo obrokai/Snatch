@@ -61,7 +61,7 @@ export default function ConsoleShowcase() {
       <div className="relative h-full max-w-6xl mx-auto px-6 grid md:grid-cols-[1fr_1.25fr] items-center gap-5 md:gap-10 content-center">
         {/* 左：文案 */}
         <div>
-          <p className="font-mono text-[0.65rem] md:text-xs tracking-[0.3em] text-accent">06 · 櫃檯 / 老闆端 · AI 後台</p>
+          <p className="font-mono text-[0.65rem] md:text-xs tracking-[0.3em] text-accent">差異化 02 · 櫃檯 / 老闆端 · 用 AI 管理健身房</p>
           <h2 className="headline mt-3 md:mt-5 text-[7vw] md:text-[3.6vw]">
             用「說的」，<br className="hidden md:block" />就能<span className="text-accent">管理</span>健身房。
           </h2>

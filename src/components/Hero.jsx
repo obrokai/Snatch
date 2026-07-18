@@ -85,16 +85,16 @@ export default function Hero({ start }) {
         </p>
         <div className="mt-10 md:mt-12 flex flex-wrap items-center justify-center gap-3 md:gap-4">
           <a
-            href="mailto:hello@snatch.tw?subject=預約免費諮詢"
+            href="mailto:pojungho@gmail.com?subject=預約免費諮詢"
             className="rounded-full bg-accent px-7 py-3 text-[0.95rem] text-[#0a0a0d] font-medium transition hover:bg-accent-soft hover:-translate-y-0.5"
           >
             預約免費諮詢
           </a>
           <a
-            href="#member"
+            href="#system"
             className="rounded-full border border-white/20 px-7 py-3 text-[0.95rem] text-white/85 transition hover:border-accent hover:text-accent"
           >
-            看產品
+            看系統如何運作
           </a>
         </div>
       </div>

@@ -61,7 +61,7 @@ export default function PhoneShowcase() {
       <div className="relative h-full max-w-6xl mx-auto px-6 grid md:grid-cols-2 items-center gap-4 md:gap-10 content-center">
         {/* 左：文案 */}
         <div className="order-2 md:order-1">
-          <p className="font-mono text-[0.65rem] md:text-xs tracking-[0.3em] text-accent">05 · 會員端 · LINE 綁定學員</p>
+          <p className="font-mono text-[0.65rem] md:text-xs tracking-[0.3em] text-accent">差異化 01 · 會員端 · LINE 綁定學員</p>
           <h2 className="headline mt-3 md:mt-5 text-[7vw] md:text-[3.6vw]">
             會員的一切，<br className="hidden md:block" />都在熟悉的 <span className="text-accent">LINE</span> 裡。
           </h2>
