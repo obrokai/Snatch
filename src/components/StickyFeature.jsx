@@ -72,19 +72,19 @@ export default function StickyFeature() {
             ref={(el) => (panels.current[i] = el)}
             className="absolute inset-x-6 md:inset-x-0 md:left-1/2 md:-translate-x-1/2 md:max-w-5xl w-auto"
           >
-            <div className="grid md:grid-cols-[1.3fr_1fr] gap-10 items-center">
+            <div className="grid md:grid-cols-[1.3fr_1fr] gap-5 md:gap-10 items-center">
               <div>
-                <span className="font-mono text-xs tracking-[0.3em] text-accent">{s.k}</span>
-                <h2 className="headline mt-4 text-[10vw] md:text-[4.6vw] whitespace-pre-line">
+                <span className="font-mono text-[0.65rem] md:text-xs tracking-[0.3em] text-accent">{s.k}</span>
+                <h2 className="headline mt-3 md:mt-4 text-[9vw] md:text-[4.6vw] whitespace-pre-line">
                   {s.big}
                 </h2>
-                <p className="mt-6 max-w-md text-white/55 font-light leading-loose">{s.d}</p>
+                <p className="mt-3 md:mt-6 max-w-md text-sm md:text-base text-white/55 font-light leading-relaxed md:leading-loose">{s.d}</p>
               </div>
               <div className="text-right md:text-left">
-                <div className="text-[16vw] md:text-[7vw] font-extralight text-accent leading-none tracking-tighter">
+                <div className="text-[13vw] md:text-[7vw] font-extralight text-accent leading-none tracking-tighter">
                   {s.stat}
                 </div>
-                <div className="mt-2 font-mono text-xs tracking-[0.2em] text-white/45">{s.unit}</div>
+                <div className="mt-2 font-mono text-[0.65rem] md:text-xs tracking-[0.2em] text-white/45">{s.unit}</div>
               </div>
             </div>
           </div>

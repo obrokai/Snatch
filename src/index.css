@@ -313,6 +313,21 @@ html.lenis body {
   padding: 12px; font-size: 0.76rem; font-weight: 600; letter-spacing: 0.04em;
 }
 
+/* 手機：縮小手機外框與內部 UI，讓文案 + 手機同屏收進 100svh */
+@media (max-width: 767px) {
+  .phone-device { width: min(54vw, 224px); border-radius: 34px; padding: 8px; }
+  .phone-island { top: 14px; width: 66px; height: 19px; }
+  .phone-glare { inset: 8px; border-radius: 27px; }
+  .phone-screen { border-radius: 27px; padding: 34px 10px 10px; gap: 8px; }
+  .line-head b { font-size: 0.78rem; }
+  .line-card { padding: 12px 12px 10px; border-radius: 14px; }
+  .line-card__date { font-size: 1.15rem; }
+  .line-menu { gap: 6px; }
+  .line-menu button { padding: 8px 7px; font-size: 0.62rem; border-radius: 10px; gap: 5px; white-space: nowrap; }
+  .line-menu button span { width: 19px; height: 19px; font-size: 0.66rem; border-radius: 6px; }
+  .line-bind { padding: 9px; font-size: 0.68rem; }
+}
+
 /* ============================================================
    筆電外框 + AI 對話式後台 console
    ============================================================ */

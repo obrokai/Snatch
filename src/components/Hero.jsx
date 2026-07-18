@@ -53,11 +53,11 @@ export default function Hero({ start }) {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(78%_62%_at_50%_50%,rgba(8,8,11,0.42),rgba(8,8,11,0.93))]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[30vh] bg-gradient-to-t from-[#08080b] to-transparent" />
 
-      {/* 裝飾器材：捲動時旋轉的橘柄壺鈴 / 啞鈴，同時緩慢漂浮 */}
-      <div className="pointer-events-none absolute left-[2%] top-[16%] w-[24vw] max-w-[300px] aspect-square animate-float hidden sm:block">
+      {/* 裝飾器材：捲動時旋轉的橘柄壺鈴 / 啞鈴，同時緩慢漂浮（手機縮小、避開文字） */}
+      <div className="pointer-events-none absolute left-[-4%] top-[9%] w-[34vw] sm:left-[2%] sm:top-[16%] sm:w-[24vw] max-w-[300px] aspect-square animate-float opacity-80 sm:opacity-100">
         <RotatingProp base={`${import.meta.env.BASE_URL}props/kettlebell/frame_`} pxPerRotation={1500} className="w-full h-full" />
       </div>
-      <div className="pointer-events-none absolute right-[1%] bottom-[10%] w-[26vw] max-w-[340px] aspect-square animate-float-delayed hidden sm:block">
+      <div className="pointer-events-none absolute right-[-6%] bottom-[5%] w-[38vw] sm:right-[1%] sm:bottom-[10%] sm:w-[26vw] max-w-[340px] aspect-square animate-float-delayed opacity-80 sm:opacity-100">
         <RotatingProp base={`${import.meta.env.BASE_URL}props/dumbbell/frame_`} pxPerRotation={1800} offset={0.3} reverse className="w-full h-full" />
       </div>
 
@@ -65,7 +65,7 @@ export default function Hero({ start }) {
         <p className="font-mono text-[0.7rem] tracking-[0.4em] text-accent uppercase mb-8">
           Snatch OS · 健身房智慧管理系統
         </p>
-        <h1 className="headline text-[13vw] md:text-[7.5vw] leading-[1.02]">
+        <h1 className="headline text-[11vw] md:text-[7.5vw] leading-[1.08] md:leading-[1.02]">
           {LINES.map((line, i) => (
             <span key={i} className="mask-line">
               <span
@@ -83,7 +83,7 @@ export default function Hero({ start }) {
         >
           AI 整合 × LINE 綁定 × 一站式營運。學員加官方 LINE 就能綁定會員、約課、購課、收提醒，不必下載 App。
         </p>
-        <div className="mt-12 flex items-center justify-center gap-4">
+        <div className="mt-10 md:mt-12 flex flex-wrap items-center justify-center gap-3 md:gap-4">
           <a
             href="mailto:hello@snatch.tw?subject=預約免費諮詢"
             className="rounded-full bg-accent px-7 py-3 text-[0.95rem] text-[#0a0a0d] font-medium transition hover:bg-accent-soft hover:-translate-y-0.5"

@@ -40,7 +40,9 @@ export default function RotatingProp({
       const img = new Image();
       img.decoding = "async";
       img.src = `${base}${String(i).padStart(3, "0")}.webp`;
-      img.onload = () => { loaded++; if (loaded === 1) drawFrame(cur); };
+      // 每張載入完成都嘗試補畫：drawFrame 對同幀是 no-op，成本極低；
+      // 這樣就算靜止不捲動（例如剛開完門停在頁首），目標幀一載好就會出現
+      img.onload = () => { loaded++; drawFrame(cur); };
       imgs[i - 1] = img;
     }
 

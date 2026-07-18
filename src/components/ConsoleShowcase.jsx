@@ -58,17 +58,17 @@ export default function ConsoleShowcase() {
         <RotatingProp base={`${import.meta.env.BASE_URL}props/kettlebell/frame_`} pxPerRotation={1300} offset={0.6} reverse className="w-full h-full opacity-85" />
       </div>
 
-      <div className="relative h-full max-w-6xl mx-auto px-6 grid md:grid-cols-[1fr_1.25fr] items-center gap-10">
+      <div className="relative h-full max-w-6xl mx-auto px-6 grid md:grid-cols-[1fr_1.25fr] items-center gap-5 md:gap-10 content-center">
         {/* 左：文案 */}
         <div>
-          <p className="font-mono text-xs tracking-[0.3em] text-accent">06 · 櫃檯 / 老闆端 · AI 後台</p>
-          <h2 className="headline mt-5 text-[9vw] md:text-[3.6vw]">
-            用「說的」，<br />就能<span className="text-accent">管理</span>健身房。
+          <p className="font-mono text-[0.65rem] md:text-xs tracking-[0.3em] text-accent">06 · 櫃檯 / 老闆端 · AI 後台</p>
+          <h2 className="headline mt-3 md:mt-5 text-[7vw] md:text-[3.6vw]">
+            用「說的」，<br className="hidden md:block" />就能<span className="text-accent">管理</span>健身房。
           </h2>
-          <p className="mt-6 max-w-md text-white/55 font-light leading-loose">
+          <p className="mt-3 md:mt-6 max-w-md text-sm md:text-base text-white/55 font-light leading-relaxed md:leading-loose">
             自然語言查詢與指令，AI 即時把答案渲染成看板、數字、圖表。不必學系統，系統聽你的話。
           </p>
-          <div className="mt-7 flex flex-wrap gap-2 font-mono text-[0.68rem] tracking-[0.12em] text-white/45">
+          <div className="mt-4 md:mt-7 hidden sm:flex flex-wrap gap-2 font-mono text-[0.68rem] tracking-[0.12em] text-white/45">
             {["自然語言查詢", "即時渲染 UI", "主動盯風險"].map((t) => (
               <span key={t} className="rounded-full border border-white/12 px-3 py-1.5">{t}</span>
             ))}

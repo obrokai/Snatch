@@ -58,26 +58,26 @@ export default function PhoneShowcase() {
         <RotatingProp base={`${import.meta.env.BASE_URL}props/dumbbell/frame_`} pxPerRotation={1400} offset={0.15} className="w-full h-full opacity-85" />
       </div>
 
-      <div className="relative h-full max-w-6xl mx-auto px-6 grid md:grid-cols-2 items-center gap-10">
+      <div className="relative h-full max-w-6xl mx-auto px-6 grid md:grid-cols-2 items-center gap-4 md:gap-10 content-center">
         {/* 左：文案 */}
         <div className="order-2 md:order-1">
-          <p className="font-mono text-xs tracking-[0.3em] text-accent">05 · 會員端 · LINE 綁定學員</p>
-          <h2 className="headline mt-5 text-[9vw] md:text-[3.6vw]">
-            會員的一切，<br />都在熟悉的 <span className="text-accent">LINE</span> 裡。
+          <p className="font-mono text-[0.65rem] md:text-xs tracking-[0.3em] text-accent">05 · 會員端 · LINE 綁定學員</p>
+          <h2 className="headline mt-3 md:mt-5 text-[7vw] md:text-[3.6vw]">
+            會員的一切，<br className="hidden md:block" />都在熟悉的 <span className="text-accent">LINE</span> 裡。
           </h2>
-          <ul className="mt-8 space-y-5 max-w-md">
+          <ul className="mt-4 md:mt-8 space-y-2.5 md:space-y-5 max-w-md">
             {POINTS.map((p, i) => (
               <li
                 key={i}
-                className="flex gap-4 transition-all duration-500"
+                className="flex gap-3 md:gap-4 transition-all duration-500"
                 style={{ opacity: active >= i * 2 ? 1 : 0.32 }}
               >
-                <span className="mt-1 h-6 w-6 shrink-0 rounded-full grid place-items-center text-[0.7rem] font-mono border border-accent/50 text-accent">
+                <span className="mt-0.5 md:mt-1 h-5 w-5 md:h-6 md:w-6 shrink-0 rounded-full grid place-items-center text-[0.62rem] md:text-[0.7rem] font-mono border border-accent/50 text-accent">
                   {i + 1}
                 </span>
                 <div>
-                  <b className="font-medium text-white/90">{p.b}</b>
-                  <p className="text-sm text-white/50 mt-1 leading-relaxed">{p.d}</p>
+                  <b className="font-medium text-white/90 text-sm md:text-base">{p.b}</b>
+                  <p className="text-xs md:text-sm text-white/50 mt-0.5 md:mt-1 leading-relaxed hidden sm:block">{p.d}</p>
                 </div>
               </li>
             ))}
