@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import RotatingProp from "./RotatingProp.jsx";
 
 /**
  * 櫃檯／老闆端 AI 對話式後台（保留原桌機/console 畫面內容）。
@@ -49,14 +50,13 @@ export default function ConsoleShowcase() {
 
   return (
     <section ref={wrap} className="relative h-[100svh] overflow-hidden">
-      {/* 裝飾：橘柄壺鈴 */}
-      <img
+      {/* 裝飾：旋轉中的橘柄壺鈴 */}
+      <div
         ref={deco}
-        src={`${import.meta.env.BASE_URL}deco-kettlebell.png`}
-        alt=""
-        aria-hidden="true"
-        className="pointer-events-none absolute right-[-4%] top-[12%] w-[24vw] max-w-[320px] opacity-90 drop-shadow-[0_30px_60px_rgba(0,0,0,0.6)] hidden md:block"
-      />
+        className="pointer-events-none absolute right-[-5%] top-[10%] w-[26vw] max-w-[340px] hidden md:block"
+      >
+        <RotatingProp src={`${import.meta.env.BASE_URL}deco-kettlebell.mp4`} rate={0.42} className="w-full h-auto opacity-85" />
+      </div>
 
       <div className="relative h-full max-w-6xl mx-auto px-6 grid md:grid-cols-[1fr_1.25fr] items-center gap-10">
         {/* 左：文案 */}

@@ -1,6 +1,7 @@
 import { useRef, useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import RotatingProp from "./RotatingProp.jsx";
 
 const LINES = ["健身房的每一步，", "都自動跑起來。"];
 
@@ -52,17 +53,13 @@ export default function Hero({ start }) {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(78%_62%_at_50%_50%,rgba(8,8,11,0.42),rgba(8,8,11,0.93))]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[30vh] bg-gradient-to-t from-[#08080b] to-transparent" />
 
-      {/* 裝飾器材：橘柄壺鈴 / 啞鈴，緩慢漂浮 */}
-      <img
-        src={`${import.meta.env.BASE_URL}deco-kettlebell.png`}
-        alt="" aria-hidden="true"
-        className="pointer-events-none absolute left-[4%] top-[20%] w-[20vw] max-w-[260px] opacity-80 animate-float drop-shadow-[0_40px_70px_rgba(0,0,0,0.55)] hidden sm:block"
-      />
-      <img
-        src={`${import.meta.env.BASE_URL}deco-dumbbell.png`}
-        alt="" aria-hidden="true"
-        className="pointer-events-none absolute right-[3%] bottom-[16%] w-[22vw] max-w-[300px] opacity-80 animate-float-delayed drop-shadow-[0_40px_70px_rgba(0,0,0,0.55)] hidden sm:block"
-      />
+      {/* 裝飾器材：360° 旋轉中的橘柄壺鈴 / 啞鈴，同時緩慢漂浮 */}
+      <div className="pointer-events-none absolute left-[2%] top-[16%] w-[24vw] max-w-[300px] animate-float hidden sm:block">
+        <RotatingProp src={`${import.meta.env.BASE_URL}deco-kettlebell.mp4`} rate={0.45} className="w-full h-auto opacity-90" />
+      </div>
+      <div className="pointer-events-none absolute right-[1%] bottom-[10%] w-[26vw] max-w-[340px] animate-float-delayed hidden sm:block">
+        <RotatingProp src={`${import.meta.env.BASE_URL}deco-dumbbell.mp4`} rate={0.4} className="w-full h-auto opacity-90" />
+      </div>
 
       <div ref={root} className="relative z-10 text-center px-6 will-change-transform">
         <p className="font-mono text-[0.7rem] tracking-[0.4em] text-accent uppercase mb-8">
