@@ -3,6 +3,7 @@ import { useSmoothScroll } from "./lib/useSmoothScroll.js";
 import Backdrop from "./components/Backdrop.jsx";
 import DoorIntro from "./components/DoorIntro.jsx";
 import Hero from "./components/Hero.jsx";
+import CinematicScrub from "./components/CinematicScrub.jsx";
 import PhoneShowcase from "./components/PhoneShowcase.jsx";
 import ConsoleShowcase from "./components/ConsoleShowcase.jsx";
 import StickyFeature from "./components/StickyFeature.jsx";
@@ -69,6 +70,9 @@ export default function App() {
             ))}
           </div>
         </section>
+
+        {/* 電影感轉場：捲動擦洗運動影像 */}
+        <CinematicScrub />
 
         {/* 解法 A：會員端 LINE 一站式（保留手機畫面） */}
         <div id="member">

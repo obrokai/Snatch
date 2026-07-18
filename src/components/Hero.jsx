@@ -42,6 +42,16 @@ export default function Hero({ start }) {
 
   return (
     <section className="relative h-[100svh] flex items-center justify-center overflow-hidden">
+      {/* 電影感環境影片：暗場館 + 橘色體積光，緩慢推軌 */}
+      <video
+        src={`${import.meta.env.BASE_URL}hero-ambient.mp4`}
+        autoPlay muted loop playsInline preload="auto"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-[0.72]"
+      />
+      {/* 壓暗 + 暈邊，保住標題可讀性 */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(78%_62%_at_50%_50%,rgba(8,8,11,0.42),rgba(8,8,11,0.93))]" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[30vh] bg-gradient-to-t from-[#08080b] to-transparent" />
+
       {/* 裝飾器材：橘柄壺鈴 / 啞鈴，緩慢漂浮 */}
       <img
         src={`${import.meta.env.BASE_URL}deco-kettlebell.png`}
