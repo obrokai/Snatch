@@ -18,7 +18,7 @@ export default function DoorIntro({ onOpen }) {
     setPhase("scanning");
     const v = videoRef.current;
     if (v) { v.currentTime = 0; v.play().catch(() => {}); }
-    const dur = 4200;
+    const dur = 4800; // 對齊轉頭影片（5s）：門開時她剛好轉正、帶著微笑
     const t0 = performance.now();
     const tick = (t) => {
       const p = Math.min(1, (t - t0) / dur);
@@ -57,13 +57,12 @@ export default function DoorIntro({ onOpen }) {
           className="absolute inset-0 transition-[filter] duration-700"
           style={{ filter: scanning ? "brightness(.5) contrast(1.1)" : "none" }}
         >
+          {/* 待機停在側臉；點掃描才播放「轉頭面向鏡頭 + 微笑」（不循環，停在最後一幀） */}
           <video
             ref={videoRef}
             src={`${import.meta.env.BASE_URL}entry-portrait.mp4`}
             poster={`${import.meta.env.BASE_URL}entry-portrait.png`}
             muted
-            loop
-            autoPlay
             playsInline
             preload="auto"
             className="w-full h-full object-cover"
