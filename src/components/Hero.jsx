@@ -1,0 +1,88 @@
+import { useRef, useEffect } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+const LINES = ["健身房的每一步，", "都自動跑起來。"];
+
+export default function Hero({ start }) {
+  const root = useRef(null);
+  const inners = useRef([]);
+  const sub = useRef(null);
+
+  useEffect(() => {
+    // 進場 mask reveal：字由遮罩下方揭露
+    const tl = gsap.timeline({ delay: start ? 0.2 : 0, paused: !start });
+    tl.to(inners.current, {
+      y: "0%",
+      duration: 1.1,
+      ease: "power4.out",
+      stagger: 0.12,
+    }).to(sub.current, { opacity: 1, y: 0, duration: 0.9, ease: "power3.out" }, "-=0.5");
+    if (start) tl.play();
+
+    // 捲動時整個 hero 淡出 + 輕微位移
+    const st = gsap.to(root.current, {
+      opacity: 0,
+      y: -80,
+      scale: 0.97,
+      ease: "none",
+      scrollTrigger: {
+        trigger: root.current,
+        start: "top top",
+        end: "bottom top",
+        scrub: true,
+      },
+    });
+
+    return () => {
+      tl.kill();
+      st.scrollTrigger?.kill();
+    };
+  }, [start]);
+
+  return (
+    <section className="relative h-[100svh] flex items-center justify-center">
+      <div ref={root} className="text-center px-6 will-change-transform">
+        <p className="font-mono text-[0.7rem] tracking-[0.4em] text-accent uppercase mb-8">
+          Snatch OS · 健身房智慧管理系統
+        </p>
+        <h1 className="headline text-[13vw] md:text-[7.5vw] leading-[1.02]">
+          {LINES.map((line, i) => (
+            <span key={i} className="mask-line">
+              <span
+                ref={(el) => (inners.current[i] = el)}
+                className="mask-inner"
+              >
+                {line}
+              </span>
+            </span>
+          ))}
+        </h1>
+        <p
+          ref={sub}
+          className="mt-10 mx-auto max-w-xl text-base md:text-lg text-white/55 font-light leading-loose opacity-0 translate-y-6"
+        >
+          AI 整合 × LINE 綁定 × 一站式營運。學員加官方 LINE 就能綁定會員、約課、購課、收提醒，不必下載 App。
+        </p>
+        <div className="mt-12 flex items-center justify-center gap-4">
+          <a
+            href="mailto:hello@snatch.tw?subject=預約免費諮詢"
+            className="rounded-full bg-accent px-7 py-3 text-[0.95rem] text-[#0a0a0d] font-medium transition hover:bg-accent-soft hover:-translate-y-0.5"
+          >
+            預約免費諮詢
+          </a>
+          <a
+            href="#showcase"
+            className="rounded-full border border-white/20 px-7 py-3 text-[0.95rem] text-white/85 transition hover:border-accent hover:text-accent"
+          >
+            看產品
+          </a>
+        </div>
+      </div>
+
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 font-mono text-[0.62rem] tracking-[0.3em] text-white/35">
+        向下捲動
+      </div>
+    </section>
+  );
+}
