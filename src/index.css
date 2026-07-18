@@ -79,3 +79,239 @@ html.lenis body {
   100% { opacity: 0; }
 }
 
+/* ============================================================
+   背景極光動畫
+   ============================================================ */
+@keyframes aurora {
+  0%, 100% { opacity: 0.42; }
+  50% { opacity: 0.62; }
+}
+@keyframes aurora-slow {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.5; }
+}
+.animate-aurora { animation: aurora 9s ease-in-out infinite; }
+.animate-aurora-slow { animation: aurora-slow 13s ease-in-out infinite; }
+
+/* 裝飾器材漂浮 */
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50% { transform: translateY(-22px) rotate(2deg); }
+}
+@keyframes float-delayed {
+  0%, 100% { transform: translateY(-10px) rotate(6deg); }
+  50% { transform: translateY(16px) rotate(-3deg); }
+}
+.animate-float { animation: float 8s ease-in-out infinite; }
+.animate-float-delayed { animation: float-delayed 10s ease-in-out infinite; }
+
+/* ============================================================
+   手機外框 + LINE 一站式 UI
+   ============================================================ */
+.phone-device {
+  position: relative;
+  width: min(78vw, 300px);
+  aspect-ratio: 300 / 620;
+  border-radius: 46px;
+  padding: 11px;
+  background:
+    linear-gradient(150deg, #2a2a30, #0c0c0f 55%, #1a1a1e);
+  box-shadow:
+    0 40px 90px -20px rgba(0, 0, 0, 0.8),
+    0 0 0 2px rgba(255, 255, 255, 0.05),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.06),
+    0 0 60px -10px rgba(255, 107, 26, 0.35);
+  will-change: transform;
+}
+.phone-island {
+  position: absolute;
+  top: 22px; left: 50%; transform: translateX(-50%);
+  width: 92px; height: 26px;
+  background: #050506;
+  border-radius: 999px;
+  z-index: 5;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+.phone-glare {
+  position: absolute;
+  inset: 11px;
+  border-radius: 36px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.16), transparent 42%);
+  z-index: 4;
+  pointer-events: none;
+}
+.phone-screen {
+  position: relative;
+  height: 100%;
+  border-radius: 36px;
+  overflow: hidden;
+  background: #eef0f3;
+  color: #1c1d21;
+  display: flex;
+  flex-direction: column;
+  padding: 46px 14px 14px;
+  gap: 12px;
+}
+.line-head {
+  display: flex; align-items: center; gap: 10px;
+}
+.line-avatar {
+  width: 40px; height: 40px; border-radius: 12px;
+  background: radial-gradient(circle at 30% 30%, #ff8a47, #e85d0a);
+  box-shadow: 0 4px 12px rgba(232, 93, 10, 0.4);
+  flex-shrink: 0;
+}
+.line-head b { display: block; font-size: 0.9rem; font-weight: 700; color: #14151a; }
+.line-head i { display: block; font-size: 0.64rem; color: #8a8d94; font-style: normal; margin-top: 2px; }
+
+.line-card {
+  position: relative;
+  border-radius: 18px;
+  padding: 16px 16px 14px;
+  background: linear-gradient(135deg, #ff7a2e, #e85d0a);
+  color: #fff;
+  box-shadow: 0 12px 26px -8px rgba(232, 93, 10, 0.6);
+  overflow: hidden;
+}
+.line-card::after {
+  content: ""; position: absolute; right: -30px; top: -30px;
+  width: 120px; height: 120px; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+}
+.line-card__label { font-size: 0.62rem; letter-spacing: 0.1em; opacity: 0.92; }
+.line-card__date { display: block; font-size: 1.5rem; font-weight: 800; letter-spacing: 0.01em; margin-top: 4px; }
+.line-card__sub { font-size: 0.64rem; opacity: 0.9; }
+.line-card__chip {
+  display: inline-block; margin-top: 10px;
+  font-size: 0.58rem; letter-spacing: 0.06em;
+  background: rgba(255, 255, 255, 0.22); border-radius: 999px;
+  padding: 3px 10px;
+}
+.line-menu {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  margin-top: 2px;
+}
+.line-menu button {
+  display: flex; align-items: center; gap: 8px;
+  background: #fff; border: 1px solid #e3e5e9; border-radius: 13px;
+  padding: 11px 12px; font-size: 0.74rem; font-weight: 600; color: #34363d;
+  transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.line-menu button span {
+  width: 24px; height: 24px; border-radius: 8px;
+  display: grid; place-items: center; font-size: 0.8rem;
+  background: #f1f2f5; color: #ff6b1a;
+  transition: all 0.35s;
+}
+.line-menu button.is-active {
+  background: #fff4ec; border-color: #ff6b1a;
+  box-shadow: 0 8px 18px -6px rgba(255, 107, 26, 0.5);
+  transform: translateY(-2px);
+}
+.line-menu button.is-active span { background: #ff6b1a; color: #fff; }
+.line-bind {
+  margin-top: auto; text-align: center;
+  background: #14151a; color: #fff; border-radius: 999px;
+  padding: 12px; font-size: 0.76rem; font-weight: 600; letter-spacing: 0.04em;
+}
+
+/* ============================================================
+   筆電外框 + AI 對話式後台 console
+   ============================================================ */
+.laptop {
+  position: relative;
+  width: min(94vw, 560px);
+  will-change: transform;
+}
+.laptop-lid {
+  border-radius: 16px 16px 4px 4px;
+  padding: 12px;
+  background: linear-gradient(150deg, #26262b, #0c0c0f 60%, #1a1a1e);
+  box-shadow:
+    0 40px 80px -24px rgba(0, 0, 0, 0.85),
+    inset 0 0 0 1.5px rgba(255, 255, 255, 0.06),
+    0 0 70px -14px rgba(255, 107, 26, 0.32);
+}
+.laptop-screen {
+  aspect-ratio: 16 / 10.4;
+  border-radius: 7px;
+  overflow: hidden;
+  background: radial-gradient(120% 130% at 50% 0%, #14100e, #0a0a0d 70%);
+  padding: clamp(12px, 2.4vw, 22px);
+  display: flex; flex-direction: column;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+}
+.laptop-base {
+  position: relative;
+  height: 13px;
+  margin: 0 auto;
+  width: 118%;
+  transform: translateX(-7.6%);
+  border-radius: 0 0 12px 12px;
+  background: linear-gradient(#1c1c20, #0d0d10);
+  box-shadow: 0 22px 30px -14px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.laptop-notch {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 90px; height: 6px; border-radius: 0 0 8px 8px;
+  background: #050506;
+}
+.cns-bar {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.62rem; color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.08em;
+}
+.cns-bar i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255, 255, 255, 0.18); }
+.cns-bar i:first-child { background: #ff5f57; }
+.cns-bar span { margin-left: 8px; }
+.cns-input {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: clamp(10px, 2vw, 18px);
+  font-size: clamp(0.8rem, 1.6vw, 1.02rem);
+  color: #fff;
+}
+.cns-prompt { color: #ff6b1a; font-weight: 600; }
+.cns-caret {
+  width: 8px; height: 1.05em; background: #ff6b1a;
+  animation: blink 1s steps(2) infinite;
+}
+@keyframes blink { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
+.cns-result {
+  margin-top: clamp(12px, 2.2vw, 20px);
+  display: flex; flex-direction: column; gap: 12px;
+  flex: 1;
+}
+.cns-card {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: clamp(12px, 2vw, 16px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.cns-card h4 {
+  font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5); margin-bottom: 12px; font-weight: 500;
+}
+.cns-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.cns-kpis span { display: block; font-size: 0.6rem; color: rgba(255, 255, 255, 0.45); }
+.cns-kpis b { display: block; font-size: clamp(0.95rem, 2vw, 1.3rem); font-weight: 700; color: #fff; margin: 3px 0; }
+.cns-kpis i { font-size: 0.58rem; color: #ff8a47; font-style: normal; }
+.cns-bars {
+  display: flex; align-items: flex-end; gap: 10px; height: clamp(70px, 12vw, 100px);
+  padding-top: 6px;
+}
+.cns-bars div {
+  position: relative; flex: 1;
+  background: linear-gradient(to top, #e85d0a, #ff8a47);
+  border-radius: 5px 5px 2px 2px;
+  transition: height 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 0 16px -4px rgba(255, 107, 26, 0.7);
+}
+.cns-bars div::after {
+  content: attr(data-name);
+  position: absolute; bottom: -16px; left: 0; right: 0; text-align: center;
+  font-size: 0.55rem; color: rgba(255, 255, 255, 0.4);
+}
+.cns-note { margin-top: 22px; font-size: 0.66rem; color: rgba(255, 255, 255, 0.5); }
+.cns-note em { color: #ff8a47; font-style: normal; }
+

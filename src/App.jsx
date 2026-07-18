@@ -1,10 +1,19 @@
 import { useState } from "react";
 import { useSmoothScroll } from "./lib/useSmoothScroll.js";
+import Backdrop from "./components/Backdrop.jsx";
 import DoorIntro from "./components/DoorIntro.jsx";
 import Hero from "./components/Hero.jsx";
-import ProductSequence from "./components/ProductSequence.jsx";
+import PhoneShowcase from "./components/PhoneShowcase.jsx";
+import ConsoleShowcase from "./components/ConsoleShowcase.jsx";
 import StickyFeature from "./components/StickyFeature.jsx";
 import Reveal from "./components/Reveal.jsx";
+
+const PAINS = [
+  { h: "人工作業耗時", d: "查會籍、對堂數全靠櫃檯人工，尖峰時段大排長龍。" },
+  { h: "會籍到期沒人追", d: "到期前無人提醒，續約全靠會員自己記得。" },
+  { h: "沉睡會員默默流失", d: "一個月沒來也沒人發現，等發現已經退會。" },
+  { h: "工具分散難整合", d: "門禁、LINE、報表各自為政，資料兜不起來。" },
+];
 
 export default function App() {
   useSmoothScroll();
@@ -12,6 +21,7 @@ export default function App() {
 
   return (
     <>
+      <Backdrop />
       <DoorIntro onOpen={() => setEntered(true)} />
 
       {/* 頂部品牌列 */}
@@ -43,25 +53,32 @@ export default function App() {
           </Reveal>
         </section>
 
-        {/* 產品展示：幀序列偽 3D + pin（效果 #2、#4） */}
-        <ProductSequence />
-
-        {/* 中段一段段揭露（效果 #3） */}
-        <section className="py-[18vh] px-6 max-w-4xl mx-auto space-y-[26vh]">
-          {[
-            { k: "會員體驗", t: "他要的一切，都在 LINE 裡。", d: "加官方 LINE 一鍵綁定，約課、購課、查會籍、收提醒——不必再下載一個新 App。" },
-            { k: "櫃檯後台", t: "用「說的」，就能操作。", d: "自然語言查詢與指令，AI 即時把答案渲染成卡片、數字、圖表。把人力留給服務。" },
-            { k: "老闆報表", t: "每天發生的事，變成能決策的數字。", d: "今日收入、新增會員、在場人數、流失名單——一個後台全看見，隨時問、隨時答。" },
-          ].map((s, i) => (
-            <Reveal key={i} className="text-center md:text-left">
-              <span className="font-mono text-xs tracking-[0.3em] text-accent">{s.k}</span>
-              <h3 className="headline mt-4 text-[9vw] md:text-[3.8vw]">{s.t}</h3>
-              <p className="mt-6 mx-auto md:mx-0 max-w-xl text-white/55 font-light leading-loose">{s.d}</p>
-            </Reveal>
-          ))}
+        {/* 痛點（問題） */}
+        <section className="py-[14vh] px-6 max-w-5xl mx-auto">
+          <Reveal className="mb-14">
+            <p className="font-mono text-xs tracking-[0.3em] text-accent">03 · 這些場景，你天天在過</p>
+            <h2 className="headline mt-4 text-[8vw] md:text-[3.4vw]">傳統管理，卡在四個地方。</h2>
+          </Reveal>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {PAINS.map((p, i) => (
+              <Reveal key={i} once className="rounded-2xl border border-white/10 bg-white/[0.02] p-7 backdrop-blur-sm">
+                <span className="font-mono text-[0.7rem] text-accent/80">0{i + 1}</span>
+                <h4 className="mt-3 text-xl font-medium text-white/90">{p.h}</h4>
+                <p className="mt-2 text-white/50 font-light leading-relaxed">{p.d}</p>
+              </Reveal>
+            ))}
+          </div>
         </section>
 
-        {/* Sticky 晶片式段落（效果 #4） */}
+        {/* 解法 A：會員端 LINE 一站式（保留手機畫面） */}
+        <div id="member">
+          <PhoneShowcase />
+        </div>
+
+        {/* 解法 B：櫃檯/老闆端 AI 對話式後台（保留桌機畫面） */}
+        <ConsoleShowcase />
+
+        {/* 成果：sticky 晶片式段落 */}
         <StickyFeature />
 
         {/* 收束 + CTA */}

@@ -41,8 +41,20 @@ export default function Hero({ start }) {
   }, [start]);
 
   return (
-    <section className="relative h-[100svh] flex items-center justify-center">
-      <div ref={root} className="text-center px-6 will-change-transform">
+    <section className="relative h-[100svh] flex items-center justify-center overflow-hidden">
+      {/* 裝飾器材：橘柄壺鈴 / 啞鈴，緩慢漂浮 */}
+      <img
+        src={`${import.meta.env.BASE_URL}deco-kettlebell.png`}
+        alt="" aria-hidden="true"
+        className="pointer-events-none absolute left-[4%] top-[20%] w-[20vw] max-w-[260px] opacity-80 animate-float drop-shadow-[0_40px_70px_rgba(0,0,0,0.55)] hidden sm:block"
+      />
+      <img
+        src={`${import.meta.env.BASE_URL}deco-dumbbell.png`}
+        alt="" aria-hidden="true"
+        className="pointer-events-none absolute right-[3%] bottom-[16%] w-[22vw] max-w-[300px] opacity-80 animate-float-delayed drop-shadow-[0_40px_70px_rgba(0,0,0,0.55)] hidden sm:block"
+      />
+
+      <div ref={root} className="relative z-10 text-center px-6 will-change-transform">
         <p className="font-mono text-[0.7rem] tracking-[0.4em] text-accent uppercase mb-8">
           Snatch OS · 健身房智慧管理系統
         </p>
@@ -72,7 +84,7 @@ export default function Hero({ start }) {
             預約免費諮詢
           </a>
           <a
-            href="#showcase"
+            href="#member"
             className="rounded-full border border-white/20 px-7 py-3 text-[0.95rem] text-white/85 transition hover:border-accent hover:text-accent"
           >
             看產品
