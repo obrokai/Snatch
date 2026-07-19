@@ -48,10 +48,10 @@ export default function Hero({ start }) {
 
       {/* 裝飾器材：捲動時旋轉的橘柄壺鈴 / 啞鈴，同時緩慢漂浮（手機縮小、避開文字） */}
       <div className="pointer-events-none absolute left-[-4%] top-[9%] w-[34vw] sm:left-[2%] sm:top-[16%] sm:w-[24vw] max-w-[300px] aspect-square animate-float opacity-80 sm:opacity-100">
-        <RotatingProp base={`${import.meta.env.BASE_URL}props/kettlebell/frame_`} pxPerRotation={1500} className="w-full h-full" />
+        <RotatingProp base={`${import.meta.env.BASE_URL}props/kettlebell/frame_`} pxPerRotation={1500} flightFrom="left" className="w-full h-full" />
       </div>
       <div className="pointer-events-none absolute right-[-6%] bottom-[5%] w-[38vw] sm:right-[1%] sm:bottom-[10%] sm:w-[26vw] max-w-[340px] aspect-square animate-float-delayed opacity-80 sm:opacity-100">
-        <RotatingProp base={`${import.meta.env.BASE_URL}props/dumbbell/frame_`} pxPerRotation={1800} offset={0.3} reverse className="w-full h-full" />
+        <RotatingProp base={`${import.meta.env.BASE_URL}props/dumbbell/frame_`} pxPerRotation={1800} offset={0.3} reverse flightFrom="right" className="w-full h-full" />
       </div>
 
       <div ref={root} className="relative z-10 text-center px-6 will-change-transform">

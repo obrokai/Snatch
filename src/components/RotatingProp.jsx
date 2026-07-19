@@ -4,7 +4,9 @@ import { useRef, useEffect } from "react";
  * 旋轉裝飾器材：捲動驅動、帶慣性緩動的旋轉。
  * 幀為去背 WebP（真 alpha）。捲動位置決定「目標角度」，實際顯示角度用 lerp
  * 平滑逼近目標 → 就算捲動更新是離散的，物件也會滑順地轉、停下時緩緩收住。
- * 只有在視窗內才跑 rAF；prefers-reduced-motion 只畫單一幀。
+ * flightFrom：飛行路線——區塊接近視窗時從該側「小尺寸滑入 + 傾角」，
+ * 到定位時放大到全尺寸（transform 疊在幀旋轉之上，形成 3D 進場感）。
+ * 只有在視窗內才跑 rAF；prefers-reduced-motion 只畫單一幀、不做飛行。
  */
 export default function RotatingProp({
   base,                 // e.g. `${BASE_URL}props/kettlebell/frame_`
@@ -13,6 +15,7 @@ export default function RotatingProp({
   offset = 0,           // 起始角度（0–1）
   reverse = false,
   ease = 0.12,          // 緩動係數（越小越軟、慣性越長）
+  flightFrom = null,    // null | "left" | "right"：滑入方向
   className = "",
   style,
 }) {
@@ -35,6 +38,23 @@ export default function RotatingProp({
       return (reverse ? -turns : turns) * count;
     };
     let cur = targetFrames();
+
+    // 飛行路線：量「父容器」位置（canvas 自己有 transform，量自己會回饋失真）。
+    // 區塊自視窗下緣進入 → t 0→1：由側邊 46% 外、0.45 倍、±14° 傾角滑入到定位。
+    const flightDir = flightFrom === "left" ? -1 : flightFrom === "right" ? 1 : 0;
+    const applyFlight = () => {
+      if (!flightDir || reduced) return;
+      const host = canvas.parentElement;
+      if (!host) return;
+      const top = host.getBoundingClientRect().top;
+      let t = Math.max(0, Math.min(1, (innerHeight - top) / (innerHeight * 0.8)));
+      t = t * t * (3 - 2 * t); // smoothstep
+      canvas.style.transform =
+        `translateX(${((1 - t) * flightDir * 46).toFixed(2)}%) ` +
+        `scale(${(0.45 + t * 0.55).toFixed(4)}) ` +
+        `rotate(${((1 - t) * flightDir * 14).toFixed(2)}deg)`;
+      canvas.style.opacity = (0.25 + t * 0.75).toFixed(3);
+    };
 
     // 延載：開門（snatch-entered）後才開始抓幀，避免開場時 96 張請求
     // 跟 poster / 轉頭影片搶頻寬（手機黑屏主因之一）；7s 後備援強制開載
@@ -95,6 +115,7 @@ export default function RotatingProp({
       if (Math.abs(d) < 0.35) cur = target;
       else cur += d * ease;
       drawFrame(cur);
+      applyFlight();
       if (Math.abs(target - cur) > 0.01) raf = requestAnimationFrame(tick);
       else running = false; // 靜止時停掉 rAF，省電
     };
@@ -119,6 +140,7 @@ export default function RotatingProp({
     io.observe(canvas);
 
     size();
+    applyFlight();
     addEventListener("resize", size);
     addEventListener("scroll", onScroll, { passive: true });
     // Safari：aspect-ratio / 字型定稿常晚於 mount，盒子一變就重建點陣，否則整張被拉伸
@@ -134,7 +156,7 @@ export default function RotatingProp({
       io.disconnect();
       cancelAnimationFrame(raf);
     };
-  }, [base, count, pxPerRotation, offset, reverse, ease]);
+  }, [base, count, pxPerRotation, offset, reverse, ease, flightFrom]);
 
   return (
     <canvas

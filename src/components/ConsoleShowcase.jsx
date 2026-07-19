@@ -55,7 +55,7 @@ export default function ConsoleShowcase() {
         ref={deco}
         className="pointer-events-none absolute right-[-5%] top-[10%] w-[26vw] max-w-[340px] aspect-square hidden md:block"
       >
-        <RotatingProp base={`${import.meta.env.BASE_URL}props/kettlebell/frame_`} pxPerRotation={1300} offset={0.6} reverse className="w-full h-full opacity-85" />
+        <RotatingProp base={`${import.meta.env.BASE_URL}props/kettlebell/frame_`} pxPerRotation={1300} offset={0.6} reverse flightFrom="right" className="w-full h-full" />
       </div>
 
       <div className="relative h-full max-w-6xl mx-auto px-6 grid md:grid-cols-[1fr_1.25fr] items-center gap-5 md:gap-10 content-center">

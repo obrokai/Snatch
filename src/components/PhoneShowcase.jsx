@@ -55,7 +55,7 @@ export default function PhoneShowcase() {
         ref={deco}
         className="pointer-events-none absolute -left-12 top-[14%] w-[28vw] max-w-[360px] aspect-square hidden md:block"
       >
-        <RotatingProp base={`${import.meta.env.BASE_URL}props/dumbbell/frame_`} pxPerRotation={1400} offset={0.15} className="w-full h-full opacity-85" />
+        <RotatingProp base={`${import.meta.env.BASE_URL}props/dumbbell/frame_`} pxPerRotation={1400} offset={0.15} flightFrom="left" className="w-full h-full" />
       </div>
 
       <div className="relative h-full max-w-6xl mx-auto px-6 grid md:grid-cols-2 items-center gap-4 md:gap-10 content-center">

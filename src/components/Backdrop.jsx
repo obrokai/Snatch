@@ -33,14 +33,33 @@ export default function Backdrop() {
       return max > 0 ? Math.min(1, window.scrollY / max) : 0;
     };
 
+    // 多站位攝影機：沿捲動在場館裡「換空間」——左右橫移 + 推近 + 明暗。
+    // x 為 % 橫移（安全範圍 ≈ (s-1)/2*100，避免露出影片邊緣），s 縮放，b 亮度。
+    const CAM = [
+      { p: 0.0,  x: 0,  s: 1.0,  b: 1.0 },   // 入口
+      { p: 0.16, x: -4, s: 1.1,  b: 0.82 },  // 往左：三件事
+      { p: 0.34, x: 6,  s: 1.16, b: 0.6 },   // 換到右側深處：痛點/電影段
+      { p: 0.55, x: -7, s: 1.22, b: 0.55 },  // 再往左：裝置區
+      { p: 0.76, x: 5,  s: 1.27, b: 0.7 },   // 右側：合規/成果
+      { p: 1.0,  x: 0,  s: 1.32, b: 0.96 },  // 回到中軸、走回光裡：CTA
+    ];
+    const camAt = (p) => {
+      let a = CAM[0], z = CAM[CAM.length - 1];
+      for (let i = 0; i < CAM.length - 1; i++)
+        if (p >= CAM[i].p && p <= CAM[i + 1].p) { a = CAM[i]; z = CAM[i + 1]; break; }
+      let t = (p - a.p) / ((z.p - a.p) || 1);
+      t = t * t * (3 - 2 * t); // smoothstep：站與站之間有到站/離站的緩急
+      return { x: a.x + (z.x - a.x) * t, s: a.s + (z.s - a.s) * t, b: a.b + (z.b - a.b) * t };
+    };
+
     const apply = () => {
-      // 深度攝影機：推近 + 輕微上飄；中段最暗（深處）、尾段回暖
       const p = curP;
       if (videoRef.current) {
-        const scale = 1 + p * 0.22;
-        const bright = 1 - Math.sin(p * Math.PI) * 0.38;
-        videoRef.current.style.transform = `translate3d(0, ${p * -3.5}%, 0) scale(${scale})`;
-        videoRef.current.style.filter = `brightness(${bright.toFixed(3)}) saturate(${(1 + p * 0.18).toFixed(3)})`;
+        const c = camAt(p);
+        videoRef.current.style.transform =
+          `translate3d(${c.x.toFixed(2)}%, ${(p * -3.5).toFixed(2)}%, 0) scale(${c.s.toFixed(4)})`;
+        videoRef.current.style.filter =
+          `brightness(${c.b.toFixed(3)}) saturate(${(1 + p * 0.18).toFixed(3)})`;
       }
       if (auroraA.current)
         auroraA.current.style.transform = `translate3d(${t.cx * 60}px, ${t.cy * 50}px, 0)`;
