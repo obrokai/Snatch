@@ -68,6 +68,9 @@ export default function CinematicScrub() {
     }
     resize();
     addEventListener("resize", resize);
+    // Safari：版面（svh/字型）晚定稿時盒子會變，跟著重建點陣避免拉伸
+    const ro = new ResizeObserver(() => resize());
+    ro.observe(canvas);
 
     const st = ScrollTrigger.create({
       trigger: wrap.current,
@@ -86,7 +89,7 @@ export default function CinematicScrub() {
       },
     });
 
-    return () => { removeEventListener("resize", resize); io.disconnect(); st.kill(); };
+    return () => { removeEventListener("resize", resize); ro.disconnect(); io.disconnect(); st.kill(); };
   }, []);
 
   return (

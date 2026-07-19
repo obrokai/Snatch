@@ -60,10 +60,10 @@ export default function RotatingProp({
     }
 
     const size = () => {
+      // 與 drawFrame 的自癒檢查用同一來源（clientWidth/Height），避免小數像素互踢
       const dpr = Math.min(devicePixelRatio, 2);
-      const r = canvas.getBoundingClientRect();
-      canvas.width = Math.max(1, Math.round(r.width * dpr));
-      canvas.height = Math.max(1, Math.round(r.height * dpr));
+      canvas.width = Math.max(1, Math.round(canvas.clientWidth * dpr));
+      canvas.height = Math.max(1, Math.round(canvas.clientHeight * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.imageSmoothingQuality = "high";
       drawn = -1;
@@ -72,9 +72,14 @@ export default function RotatingProp({
 
     function drawFrame(contFrame) {
       const idx = ((Math.round(contFrame) % count) + count) % count;
-      if (idx === drawn) return;
       const img = imgs[idx];
       if (!img || !img.complete || !img.naturalWidth) return;
+      // 自癒：Safari 可能在版面定稿前量到錯的盒子 → 點陣與顯示框比例不合會整張拉伸
+      const dpr = Math.min(devicePixelRatio, 2);
+      const bw = Math.max(1, Math.round(canvas.clientWidth * dpr));
+      const bh = Math.max(1, Math.round(canvas.clientHeight * dpr));
+      if (canvas.width !== bw || canvas.height !== bh) { size(); return; }
+      if (idx === drawn) return;
       const w = canvas.clientWidth, h = canvas.clientHeight;
       ctx.clearRect(0, 0, w, h);
       const s = Math.min(w / img.naturalWidth, h / img.naturalHeight);
@@ -116,8 +121,12 @@ export default function RotatingProp({
     size();
     addEventListener("resize", size);
     addEventListener("scroll", onScroll, { passive: true });
+    // Safari：aspect-ratio / 字型定稿常晚於 mount，盒子一變就重建點陣，否則整張被拉伸
+    const ro = new ResizeObserver(() => size());
+    ro.observe(canvas);
 
     return () => {
+      ro.disconnect();
       removeEventListener("resize", size);
       removeEventListener("scroll", onScroll);
       removeEventListener("snatch-entered", startLoad);
