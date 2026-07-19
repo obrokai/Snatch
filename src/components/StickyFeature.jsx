@@ -63,7 +63,7 @@ export default function StickyFeature() {
   }, []);
 
   return (
-    <section ref={wrap} className="relative h-[100svh] overflow-hidden bg-black">
+    <section ref={wrap} className="relative h-[100svh] overflow-hidden bg-black/55">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(80%_60%_at_50%_120%,rgba(255,107,26,0.16),transparent_70%)]" />
       <div className="relative h-full mx-auto max-w-5xl px-6 flex flex-col justify-center">
         {STEPS.map((s, i) => (
