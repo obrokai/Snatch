@@ -36,14 +36,27 @@ export default function RotatingProp({
     };
     let cur = targetFrames();
 
-    for (let i = 1; i <= count; i++) {
-      const img = new Image();
-      img.decoding = "async";
-      img.src = `${base}${String(i).padStart(3, "0")}.webp`;
-      // 每張載入完成都嘗試補畫：drawFrame 對同幀是 no-op，成本極低；
-      // 這樣就算靜止不捲動（例如剛開完門停在頁首），目標幀一載好就會出現
-      img.onload = () => { loaded++; drawFrame(cur); };
-      imgs[i - 1] = img;
+    // 延載：開門（snatch-entered）後才開始抓幀，避免開場時 96 張請求
+    // 跟 poster / 轉頭影片搶頻寬（手機黑屏主因之一）；7s 後備援強制開載
+    let started = false;
+    const startLoad = () => {
+      if (started) return;
+      started = true;
+      for (let i = 1; i <= count; i++) {
+        const img = new Image();
+        img.decoding = "async";
+        img.src = `${base}${String(i).padStart(3, "0")}.webp`;
+        // 每張載入完成都嘗試補畫：drawFrame 對同幀是 no-op，成本極低；
+        // 這樣就算靜止不捲動（例如剛開完門停在頁首），目標幀一載好就會出現
+        img.onload = () => { loaded++; drawFrame(cur); };
+        imgs[i - 1] = img;
+      }
+    };
+    let fallback = 0;
+    if (window.__snatchEntered) startLoad();
+    else {
+      addEventListener("snatch-entered", startLoad, { once: true });
+      fallback = setTimeout(startLoad, 7000);
     }
 
     const size = () => {
@@ -107,6 +120,8 @@ export default function RotatingProp({
     return () => {
       removeEventListener("resize", size);
       removeEventListener("scroll", onScroll);
+      removeEventListener("snatch-entered", startLoad);
+      clearTimeout(fallback);
       io.disconnect();
       cancelAnimationFrame(raf);
     };

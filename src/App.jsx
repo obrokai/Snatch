@@ -32,7 +32,14 @@ export default function App() {
   return (
     <>
       <Backdrop />
-      <DoorIntro onOpen={() => setEntered(true)} />
+      <DoorIntro
+        onOpen={() => {
+          setEntered(true);
+          // 通知延載資源（旋轉器材幀）：開門後才開始抓，別跟開場 poster/影片搶頻寬
+          window.__snatchEntered = true;
+          dispatchEvent(new Event("snatch-entered"));
+        }}
+      />
       <ScrollProgress show={entered} />
 
       {/* 頂部品牌列（進站後淡入 + 霧面底） */}

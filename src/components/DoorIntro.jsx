@@ -47,7 +47,7 @@ export default function DoorIntro({ onOpen }) {
   const opening = phase === "opening";
 
   return (
-    <div className="fixed inset-0 z-[60]">
+    <div className="fixed inset-0 z-[60] bg-[#08080b]">
       {/* 肖像 / 轉頭影片 + 掃描 HUD（idle/scanning，opening 時淡出） */}
       <div
         className="absolute inset-0 z-20 transition-opacity duration-700"
@@ -55,13 +55,18 @@ export default function DoorIntro({ onOpen }) {
       >
         <div
           className="absolute inset-0 transition-[filter] duration-700"
-          style={{ filter: scanning ? "brightness(.5) contrast(1.1)" : "none" }}
+          style={{
+            filter: scanning ? "brightness(.5) contrast(1.1)" : "none",
+            // 即時暖光底（0 資產）：poster 還在載時就有畫面，手機不再黑屏
+            background:
+              "radial-gradient(70% 60% at 62% 42%, rgba(120,60,20,0.55), rgba(20,12,8,0.9) 65%, #08070a)",
+          }}
         >
           {/* 待機停在側臉；點掃描才播放「轉頭面向鏡頭 + 微笑」（不循環，停在最後一幀） */}
           <video
             ref={videoRef}
             src={`${import.meta.env.BASE_URL}entry-portrait.mp4`}
-            poster={`${import.meta.env.BASE_URL}entry-portrait.png`}
+            poster={`${import.meta.env.BASE_URL}entry-portrait.jpg`}
             muted
             playsInline
             preload="auto"
