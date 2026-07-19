@@ -3,7 +3,6 @@ import { useSmoothScroll } from "./lib/useSmoothScroll.js";
 import Backdrop from "./components/Backdrop.jsx";
 import DoorIntro from "./components/DoorIntro.jsx";
 import Hero from "./components/Hero.jsx";
-import ScrubSequence from "./components/ScrubSequence.jsx";
 import TripleClaim from "./components/TripleClaim.jsx";
 import CinematicScrub from "./components/CinematicScrub.jsx";
 import SystemHub from "./components/SystemHub.jsx";
@@ -62,21 +61,7 @@ export default function App() {
       <main id="top">
         <Hero start={entered} />
 
-        {/* 走進場館：捲動＝第一人稱走入（Snowflake Virtual Office 式），
-            與 Hero 的場館背景空間連續 */}
-        <ScrubSequence
-          base={`${import.meta.env.BASE_URL}walkthrough/frame_`}
-          count={121}
-          end="+=380%"
-          loadLabel="載入場館"
-          captions={[
-            { t: "跟著走進來。", s: "這是你的場館——也是系統的入口。" },
-            { t: "會員刷臉的那一刻，", s: "報到、扣堂、通知，已經同時發生。" },
-            { t: "你看到的是器材，", s: "系統看到的是每一筆正在累積的營運數據。" },
-          ]}
-        />
-
-        {/* 02 三件事宣言 */}
+        {/* 02 三件事宣言（背景場館隨捲動持續走入——整站＝一趟走進場館） */}
         <TripleClaim />
 
         {/* 過場短句 */}
