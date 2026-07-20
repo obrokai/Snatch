@@ -8,7 +8,9 @@
  */
 import { useEffect, useRef } from "react";
 
-const COUNT = 121;
+// 兩段接力：1–121 走入大廳；122–241 鏡頭右轉進入功能訓練區（空間轉換視角）。
+// 第二段以第一段最後一幀為 start_image 生成，接點連續。
+const COUNT = 241;
 const FRAME_MIN = 8; // 起點略過全黑門洞，Hero 就看得到走廊光
 
 export default function Backdrop() {
