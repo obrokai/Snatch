@@ -67,6 +67,15 @@ export default function Backdrop() {
       return 1;
     };
 
+    // 接點「90° 甩鏡」：跨越兩段接縫時，透視偏轉 + 橫移 + 放大 + 動態模糊
+    // 掃過去——攝影上表現急轉頭的手法，讓空間切換有明確的「轉了 90 度」感。
+    const JUNCTION = (121 - FRAME_MIN) / (COUNT - 1 - FRAME_MIN);
+    const TURN_W = 0.05; // 甩鏡窗（progress 半寬）
+    const whipAt = (p) => {
+      const d = (p - JUNCTION) / TURN_W;
+      return Math.abs(d) < 1 ? Math.cos((d * Math.PI) / 2) : 0; // 中心 1、邊緣 0
+    };
+
     let drawnIdx = -1;
     const drawCam = () => {
       // 目標幀；未載到就往回找最近已載幀（走入途中漸進補幀）
@@ -76,7 +85,13 @@ export default function Backdrop() {
       // Safari 自癒：點陣與顯示框不合先重建
       const dpr = Math.min(devicePixelRatio, 2);
       if (canvas.width !== Math.max(1, Math.round(canvas.clientWidth * dpr))) { size(); return; }
-      canvas.style.filter = `brightness(${briAt(curP).toFixed(3)}) saturate(${(1 + curP * 0.15).toFixed(3)})`;
+      const whip = reduced ? 0 : whipAt(curP);
+      canvas.style.filter =
+        `brightness(${briAt(curP).toFixed(3)}) saturate(${(1 + curP * 0.15).toFixed(3)})` +
+        (whip > 0.02 ? ` blur(${(whip * 6).toFixed(1)}px)` : "");
+      canvas.style.transform = whip > 0.02
+        ? `perspective(1200px) translateX(${(-11 * whip).toFixed(2)}%) rotateY(${(-17 * whip).toFixed(2)}deg) scale(${(1 + 0.16 * whip).toFixed(4)})`
+        : "";
       if (idx === drawnIdx) return;
       const img = imgs[idx];
       const cw = canvas.clientWidth, ch = canvas.clientHeight;
